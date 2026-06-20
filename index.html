@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ВОЛНА">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0C0D10">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ВОЛНА — функциональный тренинг как игра</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C0D10; --bg2:#131519; --surf:#171A20; --surf2:#1E222A; --surf3:#262B35;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+  --tx:#F2F4F7; --tx2:#9AA1AD; --tx3:#646B78;
+  --p1:#C7F751; --p1d:#1d2410; --p1t:#dcff7a;      /* athlete 1 — lime */
+  --p2:#FF6B7E; --p2d:#2a1418; --p2t:#ff97a5;      /* athlete 2 — coral */
+  --gold:#FFC247; --blue:#5BA8FF; --vio:#A98BFF;
+  --r:14px; --r2:20px;
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--tx);font-family:'Manrope',system-ui,sans-serif;overscroll-behavior-y:none}
+body{max-width:760px;margin:0 auto;min-height:100vh;position:relative}
+.bebas{font-family:'Bebas Neue',sans-serif;letter-spacing:.02em;font-weight:400}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit}
+::-webkit-scrollbar{width:0;height:0}
+
+/* layout */
+#app{padding:0 16px calc(96px + var(--safe))}
+.topbar{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,var(--bg) 70%,transparent);padding:16px 16px 10px;display:flex;align-items:center;justify-content:space-between;max-width:760px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .mark{width:34px;height:34px;border-radius:10px;background:var(--p1);display:flex;align-items:center;justify-content:center;color:#0C0D10}
+.logo .mark svg{width:20px;height:20px}
+.logo .name{font-size:30px;line-height:.8;color:var(--tx)}
+.logo .sub{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx3);margin-top:3px}
+
+/* bottom nav */
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:760px;z-index:40;
+  background:rgba(13,14,17,.86);backdrop-filter:blur(18px);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(5,1fr);padding:8px 8px calc(8px + var(--safe))}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;color:var(--tx3);border-radius:12px;transition:color .15s}
+.nav button svg{width:23px;height:23px}
+.nav button span{font-size:10px;font-weight:600;letter-spacing:.01em}
+.nav button.on{color:var(--tx)}
+.nav button.on.start{color:var(--bg)}
+.nav .start{position:relative}
+.nav .start .fab{width:50px;height:50px;border-radius:16px;background:var(--p1);display:flex;align-items:center;justify-content:center;color:#0C0D10;margin-top:-22px;box-shadow:0 8px 24px rgba(199,247,81,.35);transition:transform .15s}
+.nav .start:active .fab{transform:scale(.92)}
+.nav .start svg{width:26px;height:26px}
+.nav .start span{margin-top:2px;color:var(--tx2)}
+
+/* generic */
+.card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r2);padding:18px}
+.row{display:flex;align-items:center;gap:12px}
+.muted{color:var(--tx2)}.dim{color:var(--tx3)}
+.h-sec{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);margin:26px 2px 12px}
+.pill{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px}
+.fade{animation:fade .4s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.view{display:none}.view.on{display:block}
+
+/* hero athlete cards */
+.athletes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.acard{border-radius:var(--r2);padding:16px 14px;position:relative;overflow:hidden;border:1px solid var(--line);background:var(--surf)}
+.acard.a1{box-shadow:inset 0 0 0 1px rgba(199,247,81,.18)}
+.acard.a2{box-shadow:inset 0 0 0 1px rgba(255,107,126,.18)}
+.acard .glow{position:absolute;inset:0;opacity:.10;pointer-events:none}
+.acard.a1 .glow{background:radial-gradient(120px 80px at 80% 0%,var(--p1),transparent)}
+.acard.a2 .glow{background:radial-gradient(120px 80px at 80% 0%,var(--p2),transparent)}
+.avatar{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:24px;color:#0C0D10}
+.a1 .avatar{background:var(--p1)} .a2 .avatar{background:var(--p2)}
+.lvl{font-family:'Bebas Neue';font-size:40px;line-height:.8}
+.a1 .lvl{color:var(--p1t)} .a2 .lvl{color:var(--p2t)}
+.rankname{font-size:11px;font-weight:700;letter-spacing:.04em}
+.xpbar{height:7px;border-radius:99px;background:var(--surf3);overflow:hidden;margin-top:10px}
+.xpbar i{display:block;height:100%;border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.a1 .xpbar i{background:var(--p1)} .a2 .xpbar i{background:var(--p2)}
+.statline{display:flex;justify-content:space-between;margin-top:12px;font-size:12px}
+.statline b{font-family:'Bebas Neue';font-size:22px;display:block;line-height:.9;font-weight:400}
+.a1 .statline b{color:var(--tx)} .a2 .statline b{color:var(--tx)}
+
+/* versus */
+.vs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:8px}
+.vsbar{height:30px;border-radius:9px;display:flex;overflow:hidden;background:var(--surf3)}
+.vsbar .l{background:var(--p1)} .vsbar .r{background:var(--p2)}
+.vs .mid{font-family:'Bebas Neue';font-size:18px;color:var(--tx3);padding:0 4px}
+
+/* workout list */
+.wod{border:1px solid var(--line);border-radius:var(--r2);background:var(--surf);overflow:hidden;margin-bottom:12px;transition:border-color .15s}
+.wod:active{border-color:var(--line2)}
+.wod .top{display:flex;gap:13px;padding:15px;align-items:center}
+.wod .ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wod .ic svg{width:25px;height:25px}
+.wod h3{margin:0;font-size:17px;font-weight:800}
+.wod .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.tag{font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--tx2);background:var(--surf2);padding:3px 8px;border-radius:7px;text-transform:uppercase}
+.chev{color:var(--tx3);flex-shrink:0;transition:transform .2s}
+.chev.open{transform:rotate(180deg)}
+.wbody{display:none;border-top:1px solid var(--line);padding:6px 15px 15px}
+.wbody.open{display:block}
+.blk{margin-top:13px}
+.blk .bh{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.blk .bt{font-size:14px;font-weight:800}
+.blk .bf{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--tx3)}
+.blk .bs{font-size:12px;color:var(--tx2);margin:2px 0 8px}
+.ex{display:flex;gap:9px;padding:7px 0;border-top:1px dashed var(--line)}
+.ex .d{width:5px;height:5px;border-radius:9px;background:var(--tx3);margin-top:8px;flex-shrink:0}
+.ex .n{flex:1;font-size:13px;font-weight:600}
+.ex .n small{display:block;font-weight:500;color:var(--tx2);font-size:11px;margin-top:1px}
+.ex .a{font-size:12px;color:var(--tx2);white-space:nowrap;font-weight:700}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:14px;font-weight:800;font-size:14px;transition:transform .12s,opacity .15s}
+.btn:active{transform:scale(.98)}
+.btn.go{background:var(--p1);color:#0C0D10;margin-top:14px}
+.btn.go svg{width:18px;height:18px}
+.btn.ghost{background:var(--surf2);color:var(--tx);border:1px solid var(--line)}
+.btn.coral{background:var(--p2);color:#0C0D10}
+
+/* segmented */
+.seg{display:flex;background:var(--surf);border:1px solid var(--line);border-radius:13px;padding:4px;gap:4px;margin-top:4px}
+.seg button{flex:1;padding:9px;border-radius:9px;font-size:13px;font-weight:700;color:var(--tx2);transition:.15s}
+.seg button.on{background:var(--surf3);color:var(--tx)}
+
+/* glossary move */
+.move{border:1px solid var(--line);border-radius:var(--r);background:var(--surf);padding:13px 14px;margin-bottom:9px}
+.move h4{margin:0 0 3px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.move .mu{font-size:11px;font-weight:700;color:var(--p1t);text-transform:uppercase;letter-spacing:.04em}
+.move p{margin:5px 0 0;font-size:12.5px;color:var(--tx2);line-height:1.55}
+.move .sv{margin-top:7px;font-size:12px;color:var(--tx)}
+.move .sv b{color:var(--vio);font-weight:700}
+
+/* progress */
+.stats4{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.sbox{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.sbox .v{font-family:'Bebas Neue';font-size:34px;line-height:.85}
+.sbox .k{font-size:11px;color:var(--tx2);font-weight:600;margin-top:3px}
+.chart{display:flex;align-items:flex-end;gap:5px;height:120px;margin-top:6px}
+.chart .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;justify-content:flex-end;height:100%}
+.chart .bar{width:100%;border-radius:6px 6px 3px 3px;min-height:3px;transition:height .5s}
+.chart .lab{font-size:9px;color:var(--tx3);font-weight:600}
+.hist{border-left:2px solid var(--line);margin-left:6px;padding-left:16px}
+.hev{position:relative;padding:10px 0;border-bottom:1px solid var(--line)}
+.hev::before{content:'';position:absolute;left:-23px;top:15px;width:9px;height:9px;border-radius:9px;background:var(--surf3);border:2px solid var(--bg)}
+.hev.p1::before{background:var(--p1)} .hev.p2::before{background:var(--p2)}
+.hev .t{font-size:14px;font-weight:700}
+.hev .m{font-size:11px;color:var(--tx2);margin-top:2px}
+.hev .sc{font-family:'Bebas Neue';font-size:16px;float:right;color:var(--gold)}
+
+/* badges */
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.badge{aspect-ratio:1;border:1px solid var(--line);border-radius:var(--r);background:var(--surf);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px;gap:5px;position:relative;overflow:hidden}
+.badge.lock{opacity:.4}
+.badge .bi{width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+.badge .bi svg{width:30px;height:30px}
+.badge .bn{font-size:10px;font-weight:700;line-height:1.15}
+.badge.got{box-shadow:inset 0 0 0 1px rgba(255,194,71,.4)}
+.badge.got .bi{color:var(--gold)}
+.badge.lock .bi{color:var(--tx3)}
+
+/* roulette */
+.roul{height:200px;border:1px solid var(--line);border-radius:var(--r2);background:var(--surf);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}
+.roul .needle{position:absolute;left:0;right:0;top:50%;height:64px;transform:translateY(-50%);border-top:2px solid var(--p1);border-bottom:2px solid var(--p1);pointer-events:none;z-index:3}
+.reel{position:absolute;width:100%}
+.ritem{height:64px;display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Bebas Neue';font-size:30px;color:var(--tx2)}
+.ritem .ri{width:34px;height:34px;display:flex;align-items:center;justify-content:center}
+
+/* modal / live */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(8,9,11,.8);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px}
+.scrim.on{display:flex}
+.sheet{background:var(--bg2);border:1px solid var(--line2);border-radius:24px;width:100%;max-width:520px;max-height:92vh;overflow:auto;padding:22px}
+.toast{position:fixed;left:50%;bottom:calc(110px + var(--safe));transform:translateX(-50%) translateY(20px);z-index:80;background:var(--surf3);border:1px solid var(--line2);border-radius:14px;padding:12px 18px;font-weight:700;font-size:14px;opacity:0;transition:.3s;pointer-events:none;display:flex;align-items:center;gap:9px;max-width:90%}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:20px;height:20px;color:var(--gold);flex-shrink:0}
+
+/* live screen */
+#live{position:fixed;inset:0;z-index:70;background:var(--bg);max-width:760px;margin:0 auto;display:none;flex-direction:column;padding:calc(16px + var(--safe)) 18px calc(20px + var(--safe))}
+#live.on{display:flex}
+.live-top{display:flex;align-items:center;justify-content:space-between}
+.iconbtn{width:40px;height:40px;border-radius:12px;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.iconbtn svg{width:20px;height:20px}
+.live-prog{display:flex;gap:5px;margin:16px 0 4px}
+.live-prog i{flex:1;height:4px;border-radius:9px;background:var(--surf3)}
+.live-prog i.done{background:var(--tx2)} .live-prog i.now{background:var(--p1)}
+.timer{font-family:'Bebas Neue';font-size:120px;line-height:.8;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.timersub{text-align:center;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--tx3)}
+.ring{width:230px;height:230px;margin:0 auto;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ctrls{display:flex;gap:10px;margin-top:8px}
+.ctrls .btn{flex:1}
+.exlist{flex:1;overflow:auto;margin-top:4px}
+.exli{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center}
+.exli .num{width:24px;height:24px;border-radius:8px;background:var(--surf3);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:14px;color:var(--tx2);flex-shrink:0}
+.exli .nm{flex:1;font-size:15px;font-weight:700}
+.exli .nm small{display:block;font-weight:500;font-size:12px;color:var(--tx2)}
+.exli .rp{font-family:'Bebas Neue';font-size:22px;color:var(--p1t)}
+.scoreinput{display:flex;gap:8px;align-items:center;margin-top:8px}
+.scoreinput input{flex:1;background:var(--surf);border:1px solid var(--line2);border-radius:12px;padding:13px;color:var(--tx);font-size:18px;font-weight:700;text-align:center}
+.stepper{display:flex;align-items:center;gap:14px;justify-content:center;margin:18px 0}
+.stepper button{width:54px;height:54px;border-radius:16px;background:var(--surf2);border:1px solid var(--line2);font-family:'Bebas Neue';font-size:30px;color:var(--tx)}
+.stepper .val{font-family:'Bebas Neue';font-size:64px;min-width:90px;text-align:center;line-height:.8}
+.whochip{display:flex;gap:8px;margin-top:10px}
+.whochip button{flex:1;padding:12px;border-radius:13px;border:1px solid var(--line);background:var(--surf);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.whochip button.on1{background:var(--p1);color:#0C0D10;border-color:var(--p1)}
+.whochip button.on2{background:var(--p2);color:#0C0D10;border-color:var(--p2)}
+.lvlup{text-align:center}
+.lvlup .big{font-family:'Bebas Neue';font-size:70px;line-height:.8}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+.cpiece{position:absolute;width:9px;height:14px;border-radius:2px;will-change:transform,opacity;animation:cfall linear forwards}
+@keyframes cfall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:.9}}
+
+/* block info during live */
+.binfo{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px}
+.binfo-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.binfo-h b{font-size:14px;font-weight:800}
+.binfo-h span{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--p1t)}
+.binfo-s{font-size:12px;color:var(--tx2);margin-top:3px;line-height:1.45}
+.bex{margin-top:9px;border-top:1px dashed var(--line);padding-top:6px}
+.bexr{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:13px}
+.bexr span{color:var(--tx);font-weight:600}
+.bexr b{color:var(--tx2);font-weight:700;white-space:nowrap}
+.bexr.hot span{color:var(--p1t)}
+
+/* timer progress bar */
+.tprog{height:6px;background:var(--surf3);border-radius:9px;overflow:hidden;margin:2px 0 6px}
+.tprog i{display:block;height:100%;background:var(--p1);width:100%;transition:width .25s linear}
+.tprog.rest i{background:var(--p2)}
+
+/* round/set counter */
+.rcount{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0}
+.rcount button{width:42px;height:42px;border-radius:12px;background:var(--surf2);border:1px solid var(--line2);font-family:'Bebas Neue';font-size:24px;color:var(--tx)}
+.rcount .rv{font-family:'Bebas Neue';font-size:30px;min-width:80px;text-align:center}
+.rcount .rv small{display:block;font-family:'Manrope';font-size:10px;font-weight:600;color:var(--tx3);letter-spacing:.08em;margin-top:-4px}
+
+/* sound toggle in live top */
+.lvtools{display:flex;gap:8px}
+
+/* toggle switch */
+.tgl{display:flex;align-items:center;justify-content:space-between;padding:13px;background:var(--surf);border:1px solid var(--line);border-radius:13px;margin-bottom:10px}
+.tgl .lab{font-size:14px;font-weight:700}
+.tgl .lab small{display:block;font-weight:500;font-size:11px;color:var(--tx2);margin-top:1px}
+.sw{width:48px;height:28px;border-radius:99px;background:var(--surf3);position:relative;transition:background .2s;flex-shrink:0}
+.sw.on{background:var(--p1)}
+.sw i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:99px;background:#fff;transition:left .2s}
+.sw.on i{left:23px}
+
+/* builder */
+.bld-mv{display:flex;align-items:center;gap:9px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surf);margin-bottom:8px}
+.bld-mv.sel{border-color:var(--p1);background:var(--p1d)}
+.bld-mv .nm{flex:1;font-size:13px;font-weight:700}
+.bld-mv .cat{font-size:10px;color:var(--tx3);font-weight:700;text-transform:uppercase}
+.bld-mv .ck{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bld-mv.sel .ck{background:var(--p1);border-color:var(--p1);color:#0C0D10}
+.bld-mv.sel .ck svg{width:14px;height:14px}
+.hdel{position:absolute;right:0;top:11px;width:26px;height:26px;border-radius:7px;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--tx3)}
+.hdel svg{width:14px;height:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M2 13c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 5-4 2.5 4 5 4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M2 18c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".5"/></svg></div>
+    <div><div class="name bebas">ВОЛНА</div><div class="sub">функционал × кросс-фит</div></div>
+  </div>
+  <button class="iconbtn" id="settingsBtn"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1l-.3-2.5H10.4l-.3 2.5a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.3 2.5h3.2l.3-2.5a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5c.1-.3.1-.6.1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
+</div>
+
+<div id="app"></div>
+
+<nav class="nav" id="nav"></nav>
+
+<div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
+<div id="live"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ====================== ВОЛНА v2 — app logic ====================== */
+
+/* ---------- icons ---------- */
+const I={
+  flame:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3 4 4 4 8a4 4 0 1 1-8 0c0-1.5.5-2.5 1-3 .3 1 1 1.5 1.5 1.5C10 8 9 6.5 12 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  wind:'<svg viewBox="0 0 24 24" fill="none"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 12h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  list:'<svg viewBox="0 0 24 24" fill="none"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M3 20a6 6 0 0 1 12 0M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  wave:'<svg viewBox="0 0 24 24" fill="none"><path d="M2 13c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 5-4 2.5 4 5 4M2 18c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  dumbbell:'<svg viewBox="0 0 24 24" fill="none"><path d="M6.5 6.5l11 11M4 9l-1.5 1.5a1.5 1.5 0 0 0 0 2L4 14M9 4L7.5 5.5M20 15l1.5-1.5a1.5 1.5 0 0 0 0-2L20 10M15 20l1.5-1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-7M20 16v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  medal:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="15" r="5" stroke="currentColor" stroke-width="1.8"/><path d="M9 10L7 3h10l-2 7M12 13.5l.7 1.4 1.5.2-1.1 1 .3 1.5-1.4-.7-1.4.7.3-1.5-1.1-1 1.5-.2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 5v14l11-7z" fill="currentColor"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" fill="none"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  dice:'<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="15" cy="9" r="1.4" fill="currentColor"/><circle cx="9" cy="15" r="1.4" fill="currentColor"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h7l-1 8 9-12h-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="currentColor"/></svg>',
+  trophy:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M9 19h6M12 14v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  fire2:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1.5 4 5 5 5 10a5 5 0 1 1-10 0c0-2 .8-3.3 1.5-4 .3 1.3 1.3 2 2 2-1-2-2.5-4 1.5-8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="currentColor"/></svg>',
+  rocket:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3c3 1 5 4 5 8l-3 3H10l-3-3c0-4 2-7 5-8zM10 14l-3 3M14 14l3 3M9 18c-1 1-1 3-1 3s2 0 3-1" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="9" r="1.6" fill="currentColor"/></svg>',
+  crown:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 18h16M5 18l-1-9 5 4 3-7 3 7 5-4-1 9z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  target:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.5-7-9.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 7 2.5C19 15.5 12 20 12 20z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+  swords:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 4l8 8m0 0l-3 3-5-2 2-2 1 1M20 4l-8 8m0 0l3 3 5-2-2-2-1 1" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+  calendar:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  sound:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 9a4 4 0 0 1 0 6M19.5 7a7 7 0 0 1 0 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  mute:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 9l5 6M22 9l-5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  skip:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 5l9 7-9 7zM18 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  hammer:'<svg viewBox="0 0 24 24" fill="none"><path d="M14 6l4 4M16 4l4 4-3 3-4-4zM13 9L4 18a2 2 0 0 0 3 3l9-9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+  timer:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 13V9M9 2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  pyr:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 4l8 16H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 14h8M10 9h4" stroke="currentColor" stroke-width="1.6"/></svg>',
+  skull:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3a8 8 0 0 0-5 14v3h10v-3a8 8 0 0 0-5-14z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="9" cy="12" r="1.4" fill="currentColor"/><circle cx="15" cy="12" r="1.4" fill="currentColor"/></svg>',
+  power:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3v9M7 6a8 8 0 1 0 10 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+};
+
+/* ---------- settings (sound/haptics) ---------- */
+let SOUND = localStorage.getItem('volna_sound')!=='0';
+let HAPTIC = localStorage.getItem('volna_haptic')!=='0';
+function setSound(v){SOUND=v;localStorage.setItem('volna_sound',v?'1':'0');}
+function setHaptic(v){HAPTIC=v;localStorage.setItem('volna_haptic',v?'1':'0');}
+
+/* ---------- sound + haptics ---------- */
+let AC;
+function ensureAC(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){}}
+function beep(freq,dur,vol,type){if(!SOUND)return;try{ensureAC();const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.frequency.value=freq;o.type=type||'sine';g.gain.setValueAtTime(vol||.25,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+(dur||.15));o.start();o.stop(AC.currentTime+(dur||.15));}catch(e){}}
+function vibrate(p){if(!HAPTIC)return;try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){}}
+function beepCue(n){const f=n===3?520:n===2?620:760;beep(f,.18,.3,'square');}      // 3-2-1 lead-in
+function beepGo(){beep(960,.28,.34,'square');}                                       // GO
+function beepTick(){beep(680,.07,.18);}                                              // small tick
+function beepRest(){beep(420,.18,.28,'sine');}                                       // rest start
+function beepDone(){beep(523,.13);setTimeout(()=>beep(659,.13),130);setTimeout(()=>beep(880,.3),260);} // finish triad
+
+/* ---------- wake lock (keep screen on) ---------- */
+let wakeLock=null;
+async function acquireWake(){try{if('wakeLock'in navigator)wakeLock=await navigator.wakeLock.request('screen');}catch(e){}}
+function releaseWake(){try{if(wakeLock){wakeLock.release();wakeLock=null;}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.getElementById('live').classList.contains('on'))acquireWake();});
+
+/* ====================== MOVES (glossary) ====================== */
+const MOVES=[
+ {n:'Трастеры',mu:'Ноги · плечи · кор',d:'Фронтальный присед в полную глубину, на вставании выжимаем штангу/гантели над головой одним слитным движением.',sv:'Синада: <b>тяжелее, негатив 3 сек</b> на приседе — больше связи с квадрицепсами.'},
+ {n:'Гребля (rower)',mu:'Спина · ноги · кардио',d:'Цепочка ноги → корпус → руки на тяге, обратный порядок на возврате. 60% усилия даёт толчок ног.',sv:'Метрика — <b>split /500м</b>, не число гребков.'},
+ {n:'Лыжи (ski-erg)',mu:'Широчайшие · трицепс · кор',d:'Тянем рукояти сверху вниз, складываясь в тазобедренном суставе. Мощность из корпуса.',sv:'Это тот же <b>hip hinge</b>, что Синада тренирует в тягах.'},
+ {n:'Маятник с гирей',mu:'Ягодицы · бицепс бедра',d:'Взрывной хлёст бёдрами, гиря летит по дуге за счёт разгибания таза, не рук.',sv:'Русский (до груди) — мощность; <b>американский</b> — плюс плечи.'},
+ {n:'Берпи',mu:'Всё тело · кардио',d:'Упор лёжа → грудь в пол → прыжок к рукам → выпрыгивание с хлопком над головой.',sv:'На длинных AMRAP — <b>step-back</b> вариант экономит пульс.'},
+ {n:'Запрыгивания на тумбу',mu:'Квадрицепс · икры · мощность',d:'Взрывной прыжок на тумбу, полное разгибание вверху. Спускайся шагом — береги ахилл.',sv:'Синада: <b>fast-twitch день</b> — боксы дают то же.'},
+ {n:'Wall ball',mu:'Ноги · плечи · координация',d:'Присед с мячом, на вставании бросок в цель 3+ м, ловишь снова в присед.',sv:'Цель — <b>одна точка</b> каждый раз: контроль траектории.'},
+ {n:'Отжимания на кольцах',mu:'Грудь · трицепс · стабилизаторы',d:'Нестабильная опора включает десятки мелких мышц. Кольца слегка наружу.',sv:'Прогресс: <b>RTO</b> вверху + негатив 3 сек.'},
+ {n:'Аэробайк',mu:'Ноги · руки · кардио',d:'Сопротивление растёт с усилием. Руки и ноги работают вместе.',sv:'Лучший финишер: <b>спринт по калориям</b>, не по времени.'},
+ {n:'Выпады',mu:'Ягодицы · квадрицепс · баланс',d:'Шагающие или обратные. Колено мягко к полу, корпус прямой, вес в пятке передней ноги.',sv:'Синада любит <b>унилатераль</b> — устраняет перекосы силы.'},
+ {n:'Гоблет-присед',mu:'Квадрицепс · кор',d:'Гиря у груди, глубокий присед, спина прямая, локти внутри коленей.',sv:'Гиря спереди ставит <b>идеальную глубину</b> и осанку.'},
+ {n:'Становая тяга',mu:'Задняя цепь · спина',d:'Штанга вдоль голеней, нейтральная спина, толчок пола ногами, бёдра и плечи поднимаются вместе.',sv:'Король <b>hip hinge</b>. Лёгкий вес в метконе — техника прежде всего.'},
+ {n:'Push press / толчок',mu:'Плечи · трицепс · ноги',d:'Лёгкий подсед и взрывной выжим штанги/гантелей над головой за счёт ног.',sv:'Ноги дают мощность, плечо <b>дожимает</b> — больше веса, чем в жиме.'},
+ {n:'Подтягивания',mu:'Широчайшие · бицепс',d:'Полный вис → подбородок над перекладиной. Кипинг ускоряет в метконе, строгие — для силы.',sv:'Нет рамы — замени <b>тягой кольца/резинки</b>.'},
+ {n:'Toes-to-bar',mu:'Кор · хват · широчайшие',d:'В висе подними прямые ноги к перекладине. Включай широчайшие, чтобы не болтаться.',sv:'Регресс — <b>подъём коленей</b> к груди.'},
+ {n:'Двойные прыжки (скакалка)',mu:'Икры · кардио · координация',d:'Скакалка дважды за один прыжок. Прыжок низкий, кисти крутят, не руки.',sv:'Регресс — <b>обычные прыжки ×2</b> по количеству.'},
+ {n:'Devil press',mu:'Всё тело · кардио',d:'Берпи с гантелями → из пола рывком обе гантели над головой. Беспощадный полнотелый движок.',sv:'Один из жёстких <b>full-body</b> приёмов — дозируй вес.'},
+ {n:'Sit-ups / подъём корпуса',mu:'Прямая мышца живота',d:'Полный подъём корпуса, поясница прокатывается по полу. В кроссфите часто abmat под поясницей.',sv:'Синада: качество > скорость, <b>без рывка шеей</b>.'},
+ {n:'Hollow / планка',mu:'Кор глубокий',d:'Hollow: поясница прижата, ноги и плечи оторваны. Планка: тело в линию, таз не провисает.',sv:'Синада: <b>hollow body</b> как база любого движения.'},
+ {n:'Farmers carry',mu:'Хват · кор · трапеции',d:'Несём тяжёлые гири/гантели по дистанции. Плечи назад, кор жёсткий, шаги короткие.',sv:'Прокачивает <b>хват и стабилизацию</b> — недооценённый функционал.'},
+];
+
+/* ====================== POOL for generator (balanced) ====================== */
+const POOL=[
+ {n:'Трастеры',u:'повт',lo:8,hi:15,cat:'full'},
+ {n:'Гребля',u:'м',lo:200,hi:500,st:50,cat:'cardio'},
+ {n:'Лыжи',u:'м',lo:200,hi:500,st:50,cat:'cardio'},
+ {n:'Аэробайк',u:'кал',lo:10,hi:20,cat:'cardio'},
+ {n:'Маятник с гирей',u:'повт',lo:12,hi:25,cat:'full'},
+ {n:'Берпи',u:'повт',lo:8,hi:18,cat:'full'},
+ {n:'Запрыгивания на тумбу',u:'повт',lo:10,hi:20,cat:'legs'},
+ {n:'Wall ball',u:'повт',lo:8,hi:18,cat:'full'},
+ {n:'Отжимания на кольцах',u:'повт',lo:6,hi:14,cat:'upper'},
+ {n:'Отжимания',u:'повт',lo:10,hi:22,cat:'upper'},
+ {n:'Подтягивания',u:'повт',lo:5,hi:12,cat:'upper'},
+ {n:'Toes-to-bar',u:'повт',lo:8,hi:16,cat:'core'},
+ {n:'Выпады',u:'повт',lo:16,hi:24,cat:'legs'},
+ {n:'Гоблет-присед',u:'повт',lo:12,hi:20,cat:'legs'},
+ {n:'Воздушные приседания',u:'повт',lo:15,hi:30,cat:'legs'},
+ {n:'Становая тяга',u:'повт',lo:8,hi:15,cat:'full'},
+ {n:'Push press',u:'повт',lo:8,hi:15,cat:'upper'},
+ {n:'Двойные прыжки',u:'повт',lo:20,hi:50,st:10,cat:'cardio'},
+ {n:'Подъём ног',u:'повт',lo:10,hi:20,cat:'core'},
+ {n:'Russian twist',u:'повт',lo:16,hi:30,cat:'core'},
+ {n:'Sit-ups',u:'повт',lo:15,hi:25,cat:'core'},
+ {n:'Mountain climbers',u:'повт',lo:20,hi:40,cat:'cardio'},
+ {n:'Devil press',u:'повт',lo:6,hi:12,cat:'full'},
+ {n:'Step-ups',u:'повт',lo:16,hi:24,cat:'legs'},
+];
+
+/* ====================== WORKOUTS ====================== */
+const WK=[
+{id:'fire',name:'ОГОНЬ',ic:I.flame,c:'p1',bg:'var(--p1d)',fg:'var(--p1t)',tags:['Ноги','AMRAP','~105 мин'],diff:1.2,
+ blocks:[
+  {t:'Разминка',f:'15 мин',mode:'timer',dur:900,s:'Суставная → динамика → лёгкая гребля 2 мин + 20 воздушных приседаний'},
+  {t:'Блок A',f:'AMRAP 20 мин',mode:'amrap',dur:1200,score:'rounds',s:'Максимум раундов: трастеры → гребля → выпады',ex:[
+    {n:'Трастеры',a:'12'},{n:'Гребля',a:'250 м'},{n:'Выпады',a:'20',no:'10/нога'}]},
+  {t:'Блок B',f:'4 раунда',mode:'rounds',rounds:4,rest:90,score:'time',s:'Отдых 90 сек между раундами',ex:[
+    {n:'Запрыгивания на тумбу',a:'15'},{n:'Двойные прыжки',a:'40'},{n:'Аэробайк',a:'45 сек'}]},
+  {t:'Блок C',f:'EMOM 12 мин',mode:'emom',min:12,s:'Нечёт — лыжи 30 сек max · чёт — wall ball ×12',ex:[
+    {n:'Лыжи (нечёт. мин)',a:'30 сек'},{n:'Wall ball (чёт. мин)',a:'12'}]},
+  {t:'Пресс + заминка',f:'15 мин',mode:'timer',dur:900,s:'Sit-ups 3×15 · планка 3×30 сек · растяжка'}],
+ tip:'Запиши число раундов блока A — это бенчмарк. Сравни через 4–6 недель.'},
+
+{id:'storm',name:'ШТОРМ',ic:I.wind,c:'blue',bg:'#0e1b2e',fg:'var(--blue)',tags:['Верх','EMOM','~105 мин'],diff:1.25,
+ blocks:[
+  {t:'Разминка',f:'15 мин',mode:'timer',dur:900,s:'Мобилизация плеч · 3×10 отжиманий · лыжи 500 м лёгкие'},
+  {t:'Блок A',f:'EMOM 15 мин',mode:'emom',min:15,s:'По кругу каждую минуту: кольца → гребля → push press',ex:[
+    {n:'Мин 1·4·7… кольца',a:'8',no:'негатив 3 сек'},{n:'Мин 2·5·8… гребля',a:'12 кал'},{n:'Мин 3·6·9… push press',a:'10'}]},
+  {t:'Блок B',f:'4 раунда',mode:'rounds',rounds:4,rest:120,score:'time',s:'Отдых 2 мин между раундами',ex:[
+    {n:'Подтягивания',a:'8'},{n:'Отжимания',a:'14'},{n:'Лыжи',a:'200 м'}]},
+  {t:'Блок C',f:'21-15-9 на время',mode:'rft',score:'time',s:'Лестница вниз: берпи → toes-to-bar → аэробайк',ex:[
+    {n:'Берпи',a:'21·15·9'},{n:'Toes-to-bar',a:'21·15·9'},{n:'Аэробайк (кал)',a:'21·15·9'}]},
+  {t:'Пресс + заминка',f:'15 мин',mode:'timer',dur:900,s:'Russian twist 3×20 · hollow 3×25 сек · растяжка'}],
+ tip:'Заметь минуту блока A, где темп падает — это твой порог.'},
+
+{id:'chipper',name:'ЧИППЕР',ic:I.list,c:'p2',bg:'var(--p2d)',fg:'var(--p2t)',tags:['Full body','For Time','~110 мин'],diff:1.35,
+ blocks:[
+  {t:'Разминка',f:'15 мин',mode:'timer',dur:900,s:'Суставная · кардио-разгон · 10 инч-вормов + 15 трастеров'},
+  {t:'Чиппер',f:'For Time',mode:'rft',score:'time',s:'Пройти всё по разу сверху вниз. Засеки общее время',ex:[
+    {n:'Маятники с гирей',a:'50'},{n:'Гребля',a:'1000 м'},{n:'Трастеры',a:'40'},{n:'Берпи',a:'30'},
+    {n:'Лыжи',a:'800 м'},{n:'Отжимания на кольцах',a:'25'},{n:'Выпады',a:'40'},
+    {n:'Wall ball',a:'20'},{n:'Аэробайк',a:'15 кал'}]},
+  {t:'Пресс + заминка',f:'15 мин',mode:'timer',dur:900,s:'Sit-ups 3×20 · планка 3×45 сек · растяжка'}],
+ tip:'Эталонный тест. Запиши время — через 6–8 недель повтори.'},
+
+{id:'pulse',name:'ПУЛЬС',ic:I.power,c:'blue',bg:'#0e1b2e',fg:'var(--blue)',tags:['Кардио','Интервалы','~95 мин'],diff:1.25,
+ blocks:[
+  {t:'Разминка',f:'12 мин',mode:'timer',dur:720,s:'Суставная + лёгкое кардио по нарастающей'},
+  {t:'Блок A',f:'Интервалы 40/20 ×8',mode:'interval',work:40,rest:20,rounds:8,s:'Движение меняется каждый интервал по кругу',ex:[
+    {n:'Гребля',a:'40 сек'},{n:'Трастеры',a:'40 сек'},{n:'Берпи',a:'40 сек'},{n:'Аэробайк',a:'40 сек'}]},
+  {t:'Блок B',f:'Интервалы 30/30 ×10',mode:'interval',work:30,rest:30,rounds:10,s:'Чередуй кор и кардио каждый интервал',ex:[
+    {n:'Mountain climbers',a:'30 сек'},{n:'Двойные прыжки',a:'30 сек'}]},
+  {t:'Заминка',f:'10 мин',mode:'timer',dur:600,s:'Растяжка всё тело, восстановление дыхания'}],
+ tip:'Интервалы держат пульс в рабочей зоне. Не падай в первом же раунде — раскладывай силы.'},
+
+{id:'deathby',name:'СМЕРТЬ ОТ…',ic:I.skull,c:'p2',bg:'var(--p2d)',fg:'var(--p2t)',tags:['Death by','До отказа','~90 мин'],diff:1.3,
+ blocks:[
+  {t:'Разминка',f:'12 мин',mode:'timer',dur:720,s:'Тщательно: суставная + 2 круга по 10 берпи в полсилы'},
+  {t:'Death by Берпи',f:'EMOM до отказа',mode:'deathby',start:3,step:1,move:'Берпи',cap:25,s:'Минута 1: 3 берпи, минута 2: 4, +1 каждую минуту. Остаток минуты — отдых. Жми «не успел», когда не укладываешься',ex:[
+    {n:'Берпи',a:'+1 каждую минуту',no:'старт с 3'}]},
+  {t:'Отдых',f:'5 мин',mode:'timer',dur:300,s:'Полное восстановление перед вторым death by'},
+  {t:'Death by Маятник',f:'EMOM до отказа',mode:'deathby',start:5,step:2,move:'Маятник с гирей',cap:40,s:'Минута 1: 5 махов, далее +2 каждую минуту',ex:[
+    {n:'Маятник с гирей',a:'+2 каждую минуту',no:'старт с 5'}]},
+  {t:'Пресс + заминка',f:'13 мин',mode:'timer',dur:780,s:'Подъём ног 3×15 · hollow 3×25 сек · растяжка'}],
+ tip:'Смысл — найти свой потолок. Запомни минуту, где сошёл: в следующий раз цель пройти дальше.'},
+
+{id:'pyramid',name:'ПИРАМИДА',ic:I.pyr,c:'gold',bg:'#2a2008',fg:'var(--gold)',tags:['Лестница','For Time','~100 мин'],diff:1.3,
+ blocks:[
+  {t:'Разминка',f:'13 мин',mode:'timer',dur:780,s:'Суставная + активация паттернов с лёгким весом'},
+  {t:'Пирамида вверх-вниз',f:'For Time',mode:'rft',score:'time',s:'Повторы 1-2-3-4-5-6-7-8-9-10-9-8-…-1 в каждом движении за круг',ex:[
+    {n:'Трастеры',a:'1→10→1'},{n:'Подтягивания',a:'1→10→1'},{n:'Берпи',a:'1→10→1'}]},
+  {t:'Финишер',f:'AMRAP 8 мин',mode:'amrap',dur:480,score:'rounds',s:'Сколько осталось сил',ex:[
+    {n:'Гоблет-присед',a:'12'},{n:'Sit-ups',a:'15'},{n:'Аэробайк',a:'10 кал'}]},
+  {t:'Заминка',f:'12 мин',mode:'timer',dur:720,s:'Растяжка + дыхание'}],
+ tip:'Вверх кажется лёгким — не разгоняйся. Вся тренировка прячется в спуске.'},
+
+{id:'strength',name:'СИЛА+МЕТКОН',ic:I.dumbbell,c:'vio',bg:'#1a1330',fg:'var(--vio)',tags:['Сила','MetCon','~110 мин'],diff:1.3,
+ blocks:[
+  {t:'Разминка',f:'15 мин',mode:'timer',dur:900,s:'Суставная + разминочные подходы становой по нарастающей'},
+  {t:'Сила: Становая',f:'5×5',mode:'strength',sets:5,reps:'5',rest:150,move:'Становая тяга',s:'5 подходов по 5 повторов, тяжело. Отдых 2.5 мин. Вес — около 75–80%',ex:[
+    {n:'Становая тяга',a:'5×5'}]},
+  {t:'Сила: Жим',f:'4×8',mode:'strength',sets:4,reps:'8',rest:120,move:'Push press',s:'4 подхода по 8, средне-тяжело. Отдых 2 мин',ex:[
+    {n:'Push press',a:'4×8'}]},
+  {t:'MetCon',f:'AMRAP 12 мин',mode:'amrap',dur:720,score:'rounds',s:'После силовой — добей метконом',ex:[
+    {n:'Wall ball',a:'12'},{n:'Запрыгивания на тумбу',a:'9'},{n:'Берпи',a:'6'}]},
+  {t:'Заминка',f:'12 мин',mode:'timer',dur:720,s:'Растяжка задней цепи и плеч'}],
+ tip:'Сила в начале, пока свежий. MetCon в конце добивает то, что осталось.'},
+
+{id:'tabataset',name:'ТАБАТА-СЕТ',ic:I.timer,c:'p1',bg:'var(--p1d)',fg:'var(--p1t)',tags:['Tabata','4 станции','~85 мин'],diff:1.2,
+ blocks:[
+  {t:'Разминка',f:'12 мин',mode:'timer',dur:720,s:'Суставная + лёгкое кардио'},
+  {t:'Tabata 1 — ноги',f:'20/10 ×8',mode:'interval',work:20,rest:10,rounds:8,s:'Воздушные приседания на максимум каждые 20 сек',ex:[{n:'Воздушные приседания',a:'20 сек max'}]},
+  {t:'Отдых',f:'1 мин',mode:'timer',dur:60,s:'Перевести дух'},
+  {t:'Tabata 2 — верх',f:'20/10 ×8',mode:'interval',work:20,rest:10,rounds:8,s:'Отжимания на максимум',ex:[{n:'Отжимания',a:'20 сек max'}]},
+  {t:'Отдых',f:'1 мин',mode:'timer',dur:60,s:'Перевести дух'},
+  {t:'Tabata 3 — сила',f:'20/10 ×8',mode:'interval',work:20,rest:10,rounds:8,s:'Махи гирей на максимум',ex:[{n:'Маятник с гирей',a:'20 сек max'}]},
+  {t:'Отдых',f:'1 мин',mode:'timer',dur:60,s:'Перевести дух'},
+  {t:'Tabata 4 — кор',f:'20/10 ×8',mode:'interval',work:20,rest:10,rounds:8,s:'Mountain climbers на максимум',ex:[{n:'Mountain climbers',a:'20 сек max'}]},
+  {t:'Заминка',f:'12 мин',mode:'timer',dur:720,s:'Растяжка + дыхание'}],
+ tip:'Tabata — это про честный максимум в каждые 20 секунд. Считай повторы в первом раунде и старайся не падать.'},
+
+{id:'duo',name:'ДУЭТ',ic:I.users,c:'vio',bg:'#1a1330',fg:'var(--vio)',tags:['На двоих','Partner','~100 мин'],diff:1.15,
+ blocks:[
+  {t:'Разминка вместе',f:'15 мин',mode:'timer',dur:900,s:'Синхронная суставная · парная активация с резинкой · совместное кардио'},
+  {t:'Блок A',f:'You go, I go ×5',mode:'rounds',rounds:5,rest:0,score:'time',s:'Пока один работает — второй отдыхает, потом смена',ex:[
+    {n:'P1 гребля 250 м / P2 берпи',a:'смена'},{n:'P1 лыжи 250 м / P2 маятник',a:'смена'},{n:'P1 аэробайк 15 кал / P2 трастеры',a:'смена'}]},
+  {t:'Блок B',f:'4 раунда',mode:'rounds',rounds:4,rest:60,score:'time',s:'Делите повторы пополам',ex:[
+    {n:'Трастеры',a:'40 (20+20)'},{n:'Маятники',a:'40'},{n:'Выпады',a:'40'},{n:'Wall ball',a:'30'}]},
+  {t:'Блок C',f:'AMRAP 15 мин',mode:'amrap',dur:900,score:'rounds',s:'Чередуетесь раунд через раунд',ex:[
+    {n:'Лыжи',a:'150 м'},{n:'Wall ball',a:'8'},{n:'Кольца',a:'6'}]},
+  {t:'Финал + заминка',f:'15 мин',mode:'timer',dur:900,s:'Аэробайк 3 мин max вместе · парная растяжка'}],
+ tip:'Пока партнёр пашет — халтурить стыдно. Интенсивность растёт сама.'},
+
+{id:'wave',name:'НАКАТ',ic:I.wave,c:'gold',bg:'#2a2008',fg:'var(--gold)',tags:['Прогрессия','Волны','~120 мин'],diff:1.4,
+ blocks:[
+  {t:'Разминка',f:'15 мин',mode:'timer',dur:900,s:'Мобильность · активация с нарастанием веса'},
+  {t:'Волна 1 — лёгкая',f:'3 раунда',mode:'rounds',rounds:3,rest:60,s:'60-65% веса, техника',ex:[
+    {n:'Трастеры',a:'15'},{n:'Гребля',a:'300 м'},{n:'Берпи',a:'8'}]},
+  {t:'Волна 2 — средняя',f:'3 раунда',mode:'rounds',rounds:3,rest:75,s:'75-80% веса',ex:[
+    {n:'Трастеры',a:'12'},{n:'Становая тяга',a:'10'},{n:'Берпи',a:'10'},{n:'Маятник',a:'15'}]},
+  {t:'Волна 3 — тяжёлая',f:'3 раунда',mode:'rounds',rounds:3,rest:90,score:'time',s:'85-90% веса — становится жёстко',ex:[
+    {n:'Трастеры',a:'8'},{n:'Становая тяга',a:'8'},{n:'Берпи',a:'12'},{n:'Маятник',a:'20'},{n:'Лыжи',a:'200 м'}]},
+  {t:'Финал',f:'AMRAP 10 мин',mode:'amrap',dur:600,score:'rounds',s:'Все остатки сил',ex:[
+    {n:'Аэробайк',a:'10 кал'},{n:'Devil press',a:'8'},{n:'Wall ball',a:'10'}]},
+  {t:'Пресс + заминка',f:'15 мин',mode:'timer',dur:900,s:'Подъём ног 3×15 · twist 3×20 · растяжка'}],
+ tip:'Волны учат разгоняться под нагрузкой — ключевое качество кросс-фита.'}
+];
+
+/* ---------- ranks ---------- */
+const RANKS=[[0,'Новичок'],[3,'Боец'],[7,'Атлет'],[12,'Воин'],[18,'Зверь'],[26,'Легенда']];
+function lvlFromXp(xp){let l=1,need=250,acc=0;while(xp>=acc+need){acc+=need;l++;need=Math.round(need*1.18);}return{lvl:l,cur:xp-acc,need};}
+function rankName(l){let r='Новичок';for(const[t,n]of RANKS)if(l>=t)r=n;return r;}
+
+/* ---------- achievements ---------- */
+const ACH=[
+ {id:'first',n:'Первый WOD',ic:I.bolt,chk:s=>s.history.length>=1},
+ {id:'streak3',n:'3 дня подряд',ic:I.fire2,chk:s=>maxStreak(s)>=3},
+ {id:'streak7',n:'Неделя огня',ic:I.flame,chk:s=>maxStreak(s)>=7},
+ {id:'five',n:'5 разных WOD',ic:I.target,chk:s=>new Set(s.history.map(h=>h.wid)).size>=5},
+ {id:'ten',n:'10 тренировок',ic:I.calendar,chk:s=>s.history.length>=10},
+ {id:'xp2k',n:'2000 XP',ic:I.rocket,chk:s=>s.ath[0].xp+s.ath[1].xp>=2000},
+ {id:'duo',n:'Сделали ДУЭТ',ic:I.heart,chk:s=>s.history.some(h=>h.wid==='duo')},
+ {id:'death',n:'Пережил Death by',ic:I.skull,chk:s=>s.history.some(h=>h.wid==='deathby')},
+ {id:'lvl5',n:'Уровень 5',ic:I.crown,chk:s=>Math.max(lvlFromXp(s.ath[0].xp).lvl,lvlFromXp(s.ath[1].xp).lvl)>=5},
+ {id:'duel',n:'Победа в дуэли',ic:I.swords,chk:s=>weekXp(s,0)>0&&weekXp(s,1)>0&&s.history.length>=4},
+ {id:'twenty',n:'20 тренировок',ic:I.medal,chk:s=>s.history.length>=20},
+ {id:'builder',n:'Свой WOD',ic:I.hammer,chk:s=>s.history.some(h=>h.wid==='custom')},
+];
+
+/* ====================== state (cloud-synced) ====================== */
+const CODE_KEY='volna_room_code', CACHE_KEY='volna_cache_v2', PEND_KEY='volna_pending_v2';
+let S=null, NEED_CODE=false, lastSig='';
+function getCode(){return localStorage.getItem(CODE_KEY)||'';}
+function hdr(){const h={'Content-Type':'application/json'};const c=getCode();if(c)h['X-Room-Code']=c;return h;}
+function pending(){try{return JSON.parse(localStorage.getItem(PEND_KEY)||'[]');}catch(e){return[];}}
+function setPending(a){try{localStorage.setItem(PEND_KEY,JSON.stringify(a));}catch(e){}}
+function fresh(){return{ath:[{name:'Глеб',xp:0},{name:'Партнёр',xp:0}],history:[],ach:[],setup:false};}
+function rebuild(data){
+  const names=(data&&data.names)||[];
+  S={ath:[{name:names[0]||'Глеб',xp:0},{name:names[1]||'Партнёр',xp:0}],history:[],ach:[],setup:!!((names[0]||'').trim()||(names[1]||'').trim())};
+  const seen=new Set();
+  const all=[...((data&&data.events)||[]),...pending()].filter(ev=>{if(!ev||!ev.id||seen.has(ev.id))return false;seen.add(ev.id);return true;}).sort((a,b)=>a.ts-b.ts);
+  all.forEach(ev=>{if(ev.type==='workout'&&S.ath[ev.ath]){S.ath[ev.ath].xp+=ev.xp;S.history.push(ev);}});
+  ACH.forEach(a=>{if(a.chk(S))S.ach.push(a.id);});S.ach=[...new Set(S.ach)];
+}
+async function fetchState(){
+  const r=await fetch('/api/state',{headers:hdr()});
+  if(r.status===401){NEED_CODE=true;throw new Error('auth');}
+  const d=await r.json();
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify(d));}catch(e){}
+  return d;
+}
+function sigOf(d){return((d&&d.events)?d.events.length:0)+'|'+(((d&&d.names)||[]).join(','));}
+async function flush(){
+  const p=pending();if(!p.length)return;
+  try{const r=await fetch('/api/events',{method:'POST',headers:hdr(),body:JSON.stringify({events:p})});if(r.ok)setPending([]);}catch(e){}
+}
+async function load(){
+  await flush();
+  try{const d=await fetchState();NEED_CODE=false;rebuild(d);lastSig=sigOf(d);}
+  catch(e){
+    if(NEED_CODE)return;
+    try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');rebuild(c||{names:[],events:[]});}catch(_){S=fresh();}
+  }
+}
+async function pushEvents(evs){const p=pending();p.push(...evs);setPending(p);await flush();}
+async function setNames(n0,n1){try{await fetch('/api/names',{method:'POST',headers:hdr(),body:JSON.stringify({names:[n0,n1]})});}catch(e){}}
+async function resetAll(){setPending([]);try{await fetch('/api/reset',{method:'POST',headers:hdr(),body:JSON.stringify({})});}catch(e){}}
+async function deleteEvent(id){try{await fetch('/api/delete',{method:'POST',headers:hdr(),body:JSON.stringify({id})});}catch(e){}}
+function renderGate(){
+  document.querySelector('.topbar').style.visibility='hidden';
+  document.getElementById('nav').style.display='none';
+  const a=document.getElementById('app');
+  a.innerHTML=`<div class="fade" style="padding-top:12vh;text-align:center">
+    <div class="bebas" style="font-size:60px;color:var(--p1);line-height:.8">ВОЛНА</div>
+    <div class="muted" style="margin-top:10px">Введите код комнаты,<br>чтобы открыть общий прогресс</div>
+    <div class="card" style="margin-top:24px">
+      <input id="codeIn" placeholder="код комнаты" autocapitalize="off" autocorrect="off" style="width:100%;background:var(--surf2);border:1px solid var(--line2);border-radius:12px;padding:14px;color:var(--tx);font-size:18px;font-weight:700;text-align:center;letter-spacing:.08em">
+      <button class="btn go" id="codeGo" style="margin-top:14px">Войти</button>
+      <div id="codeErr" style="font-size:12px;margin-top:10px;display:none;color:var(--p2t)">Неверный код, попробуйте ещё раз</div>
+    </div></div>`;
+  a.querySelector('#codeGo').onclick=async()=>{
+    const v=a.querySelector('#codeIn').value.trim();
+    localStorage.setItem(CODE_KEY,v);NEED_CODE=false;await load();
+    if(NEED_CODE)a.querySelector('#codeErr').style.display='block';else render();
+  };
+}
+function startSync(){
+  setInterval(async()=>{
+    if(!S||!S.setup||NEED_CODE)return;
+    if(document.getElementById('live').classList.contains('on'))return;
+    if(document.getElementById('scrim').classList.contains('on'))return;
+    if(['home','prog','badge'].indexOf(TAB)<0)return;
+    try{const d=await fetchState();const sig=sigOf(d);if(sig!==lastSig){lastSig=sig;rebuild(d);render();}}catch(e){}
+  },6000);
+}
+
+/* ---------- helpers ---------- */
+function dayKey(ts){const d=new Date(ts);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function maxStreak(s){const days=[...new Set(s.history.map(h=>dayKey(h.ts)))].map(k=>{const[y,m,d]=k.split('-');return new Date(y,m-1,d).getTime();}).sort((a,b)=>a-b);if(!days.length)return 0;let best=1,cur=1;for(let i=1;i<days.length;i++){const gap=Math.round((days[i]-days[i-1])/864e5);if(gap===1)cur++;else if(gap>1)cur=1;best=Math.max(best,cur);}return best;}
+function curStreak(s){const days=[...new Set(s.history.map(h=>dayKey(h.ts)))];if(!days.length)return 0;const set=new Set(days);let cur=0,d=new Date();for(let i=0;i<400;i++){if(set.has(dayKey(d.getTime())))cur++;else if(i>0)break;d.setDate(d.getDate()-1);}return cur;}
+function weekStart(){const d=new Date();const day=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-day);return d.getTime();}
+function weekXp(s,ai){return s.history.filter(h=>h.ts>=weekStart()&&h.ath===ai).reduce((a,h)=>a+h.xp,0);}
+function weekCount(s,ai){return s.history.filter(h=>h.ts>=weekStart()&&h.ath===ai).length;}
+function fmtTime(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0');}
+function avatarInit(n){return n.trim().slice(0,2).toUpperCase();}
+
+/* ---------- toast + confetti ---------- */
+let tT;
+function toast(msg,icon){const t=document.getElementById('toast');t.innerHTML=(icon||I.bolt)+'<span>'+msg+'</span>';t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2600);}
+function confetti(){
+  const c=document.createElement('div');c.className='confetti';document.body.appendChild(c);
+  const cols=['#C7F751','#FF6B7E','#FFC247','#5BA8FF','#A98BFF'];
+  for(let i=0;i<48;i++){const p=document.createElement('div');p.className='cpiece';p.style.left=Math.random()*100+'%';p.style.background=cols[i%cols.length];p.style.animationDuration=(1.6+Math.random()*1.4)+'s';p.style.animationDelay=(Math.random()*.4)+'s';p.style.transform='translateY(-20px)';c.appendChild(p);}
+  setTimeout(()=>c.remove(),3200);
+}
+
+/* ====================== RENDER ====================== */
+let TAB='home';
+function render(){
+  if(NEED_CODE){renderGate();return;}
+  if(!S.setup){renderSetup();return;}
+  document.querySelector('.topbar').style.visibility='visible';
+  document.getElementById('nav').style.display='grid';
+  renderNav();
+  const a=document.getElementById('app');
+  a.innerHTML='<div class="view on fade" id="view"></div>';
+  const v=document.getElementById('view');
+  if(TAB==='home')homeView(v);
+  else if(TAB==='wods')wodsView(v);
+  else if(TAB==='rand')randView(v);
+  else if(TAB==='prog')progView(v);
+  else if(TAB==='badge')badgeView(v);
+}
+function renderNav(){
+  const items=[['home','Главная',I.home],['wods','WODs',I.dumbbell],['rand','Старт',I.play],['prog','Прогресс',I.chart],['badge','Награды',I.medal]];
+  document.getElementById('nav').innerHTML=items.map(([id,lab,ic])=>{
+    if(id==='rand')return `<button class="start ${TAB===id?'on':''}" data-t="${id}"><div class="fab">${ic}</div><span>Старт</span></button>`;
+    return `<button class="${TAB===id?'on':''}" data-t="${id}">${ic}<span>${lab}</span></button>`;
+  }).join('');
+  document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;render();});
+}
+
+/* ---------- setup ---------- */
+function renderSetup(){
+  document.querySelector('.topbar').style.visibility='hidden';
+  document.getElementById('nav').style.display='none';
+  const a=document.getElementById('app');
+  a.innerHTML=`<div class="fade" style="padding-top:8vh;text-align:center">
+    <div class="bebas" style="font-size:64px;line-height:.8;color:var(--p1)">ВОЛНА</div>
+    <div class="muted" style="margin-top:8px">Функциональный тренинг как игра.<br>Двое атлетов, уровни, дуэль и прогресс.</div>
+    <div class="card" style="text-align:left;margin-top:26px">
+      <div class="h-sec" style="margin-top:0">Кто играет</div>
+      <label class="dim" style="font-size:12px">Атлет 1 (лайм)</label>
+      <input id="n1" value="${S.ath[0].name}" style="width:100%;margin:6px 0 14px;background:var(--surf2);border:1px solid var(--line2);border-radius:12px;padding:13px;color:var(--tx);font-size:16px;font-weight:700">
+      <label class="dim" style="font-size:12px">Атлет 2 (коралл)</label>
+      <input id="n2" placeholder="Имя девушки" value="${S.ath[1].name==='Партнёр'?'':S.ath[1].name}" style="width:100%;margin:6px 0 0;background:var(--surf2);border:1px solid var(--line2);border-radius:12px;padding:13px;color:var(--tx);font-size:16px;font-weight:700">
+      <button class="btn go" id="startSetup" style="margin-top:20px">${I.bolt} Поехали</button>
+    </div></div>`;
+  document.getElementById('startSetup').onclick=async()=>{
+    const a0=(document.getElementById('n1').value||'Глеб').slice(0,14);
+    const a1=(document.getElementById('n2').value||'Партнёр').slice(0,14);
+    await setNames(a0,a1);await load();
+    document.querySelector('.topbar').style.visibility='visible';
+    document.getElementById('nav').style.display='grid';
+    render();
+  };
+}
+
+/* ---------- HOME ---------- */
+function homeView(v){
+  const s1=lvlFromXp(S.ath[0].xp),s2=lvlFromXp(S.ath[1].xp);
+  const w1=weekXp(S,0),w2=weekXp(S,1),wt=w1+w2||1;
+  const cs=curStreak(S);
+  v.innerHTML=`
+  <div class="athletes">${ath(0,s1)}${ath(1,s2)}</div>
+  <div class="h-sec">Дуэль недели</div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div><div class="bebas" style="font-size:30px;color:var(--p1t);line-height:.8">${w1}</div><div class="dim" style="font-size:11px">${S.ath[0].name} · XP</div></div>
+      ${I.swords}
+      <div style="text-align:right"><div class="bebas" style="font-size:30px;color:var(--p2t);line-height:.8">${w2}</div><div class="dim" style="font-size:11px">${S.ath[1].name} · XP</div></div>
+    </div>
+    <div class="vsbar" style="margin-top:12px"><div class="l" style="width:${Math.round(w1/wt*100)}%"></div><div class="r" style="width:${Math.round(w2/wt*100)}%"></div></div>
+    <div class="muted" style="font-size:12px;margin-top:10px;text-align:center">${w1===w2?'Идёте ноздря в ноздрю':(w1>w2?S.ath[0].name+' впереди на '+(w1-w2)+' XP':S.ath[1].name+' впереди на '+(w2-w1)+' XP')}</div>
+  </div>
+  <div class="h-sec">Сегодня</div>
+  <div class="card" style="background:var(--p1d);border-color:rgba(199,247,81,.25)">
+    <div class="pill" style="background:rgba(199,247,81,.18);color:var(--p1t)">${I.fire2} стрик ${cs} ${cs===1?'день':'дн.'}</div>
+    <div style="font-weight:800;font-size:16px;margin-top:8px">${cs===0?'Сегодня — отличный день начать':'Продли серию — не разрывай волну'}</div>
+    <button class="btn go" id="quickStart" style="margin-top:14px">${I.dice} Случайная тренировка</button>
+  </div>
+  <div class="h-sec">Быстрый запуск</div>
+  ${WK.map(w=>`<button class="wod" data-w="${w.id}" style="display:block;text-align:left">
+    <div class="top"><div class="ic" style="background:${w.bg};color:${w.fg}">${w.ic}</div>
+    <div style="flex:1"><h3>${w.name}</h3><div class="tags">${w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div>
+    ${I.play}</div></button>`).join('')}`;
+  v.querySelector('#quickStart').onclick=()=>{TAB='rand';render();};
+  v.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>openWod(b.dataset.w));
+}
+function ath(i,s){
+  const A=S.ath[i],cls='a'+(i+1);
+  return `<div class="acard ${cls}"><div class="glow"></div>
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div class="avatar">${avatarInit(A.name)}</div>
+      <div style="text-align:right"><div class="lvl bebas">${s.lvl}</div><div class="dim" style="font-size:9px;letter-spacing:.1em;margin-top:-2px">УРОВЕНЬ</div></div>
+    </div>
+    <div style="margin-top:10px;font-weight:800;font-size:15px">${A.name}</div>
+    <div class="rankname" style="color:${i===0?'var(--p1t)':'var(--p2t)'}">${rankName(s.lvl)}</div>
+    <div class="xpbar"><i style="width:${Math.round(s.cur/s.need*100)}%"></i></div>
+    <div class="dim" style="font-size:10px;margin-top:5px">${s.cur} / ${s.need} XP</div>
+    <div class="statline">
+      <div><b class="bebas">${A.xp}</b><span class="dim">всего XP</span></div>
+      <div style="text-align:right"><b class="bebas">${weekCount(S,i)}</b><span class="dim">на неделе</span></div>
+    </div></div>`;
+}
+
+/* ---------- WODS ---------- */
+let WODSUB='wk';
+function wodsView(v){
+  v.innerHTML=`<div class="seg"><button data-s="wk" class="${WODSUB==='wk'?'on':''}">Тренировки</button><button data-s="mv" class="${WODSUB==='mv'?'on':''}">Движения</button></div><div id="wodbody" style="margin-top:14px"></div>`;
+  v.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{WODSUB=b.dataset.s;wodsView(v);});
+  const body=v.querySelector('#wodbody');
+  if(WODSUB==='wk'){
+    body.innerHTML=WK.map(w=>wodCard(w)).join('');
+    body.querySelectorAll('.wod .top').forEach(t=>t.onclick=()=>{const b=t.parentElement.querySelector('.wbody');b.classList.toggle('open');t.querySelector('.chev').classList.toggle('open');});
+    body.querySelectorAll('[data-go]').forEach(b=>b.onclick=e=>{e.stopPropagation();startWorkout(b.dataset.go);});
+  }else{
+    body.innerHTML='<div class="muted" style="font-size:12.5px;margin-bottom:14px;line-height:1.6">База движений вашего зала. <b style="color:var(--vio)">Фиолетовым</b> — приёмы из метода Синады: компаунд-движения, hip hinge и mind-muscle connection.</div>'+
+      MOVES.map(m=>`<div class="move"><h4>${m.n}</h4><div class="mu">${m.mu}</div><p>${m.d}</p><div class="sv">${m.sv}</div></div>`).join('');
+  }
+}
+function wodCard(w){
+  return `<div class="wod" data-id="${w.id}">
+    <div class="top"><div class="ic" style="background:${w.bg};color:${w.fg}">${w.ic}</div>
+      <div style="flex:1"><h3>${w.name}</h3><div class="tags">${w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div>
+      <div class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="wbody">
+      ${w.blocks.map(b=>`<div class="blk">
+        <div class="bh"><div class="bt">${b.t}</div><div class="bf">${b.f}</div></div>
+        <div class="bs">${b.s||''}</div>
+        ${(b.ex||[]).map(e=>`<div class="ex"><div class="d"></div><div class="n">${e.n}${e.no?`<small>${e.no}</small>`:''}</div><div class="a">${e.a||''}</div></div>`).join('')}
+      </div>`).join('')}
+      <div style="background:var(--surf2);border-radius:12px;padding:11px 13px;margin-top:14px;font-size:12px;color:var(--tx2)">${I.bolt} ${w.tip}</div>
+      <button class="btn go" data-go="${w.id}">${I.play} Начать тренировку</button>
+    </div></div>`;
+}
+function openWod(id){TAB='wods';WODSUB='wk';render();setTimeout(()=>{const c=document.querySelector(`.wod[data-id="${id}"]`);if(c){c.querySelector('.wbody').classList.add('open');c.querySelector('.chev').classList.add('open');c.scrollIntoView({behavior:'smooth',block:'center'});}},60);}
+
+/* ---------- RANDOM / GENERATOR / BUILDER ---------- */
+function rnd(a,b,st){const v=a+Math.floor(Math.random()*((b-a)+1));return st?Math.round(v/st)*st:v;}
+function pickBalanced(k){
+  const byCat={};POOL.forEach(p=>{(byCat[p.cat]=byCat[p.cat]||[]).push(p);});
+  const cats=Object.keys(byCat).sort(()=>Math.random()-.5);
+  const out=[];let ci=0;
+  while(out.length<k){const c=cats[ci%cats.length];const arr=byCat[c].filter(p=>!out.includes(p));if(arr.length)out.push(arr[Math.floor(Math.random()*arr.length)]);ci++;if(ci>40)break;}
+  return out;
+}
+function genWod(){
+  const formats=[
+   {label:'AMRAP 18 мин',mode:'amrap',dur:1080,score:'rounds',k:3},
+   {label:'AMRAP 12 мин',mode:'amrap',dur:720,score:'rounds',k:3},
+   {label:'4 раунда на время',mode:'rounds',rounds:4,rest:60,score:'time',k:4},
+   {label:'21-15-9 на время',mode:'rft',score:'time',k:3,ladder:true},
+   {label:'EMOM 16 мин',mode:'emom',min:16,k:4},
+   {label:'Интервалы 40/20 ×8',mode:'interval',work:40,rest:20,rounds:8,k:4},
+   {label:'Tabata 20/10 ×8',mode:'interval',work:20,rest:10,rounds:8,k:3},
+   {label:'Чиппер For Time',mode:'rft',score:'time',k:5,chip:true},
+  ];
+  const fmt=formats[Math.floor(Math.random()*formats.length)];
+  const pool=pickBalanced(fmt.k);
+  const ex=pool.map(p=>{
+    if(fmt.ladder)return{n:p.n,a:'21·15·9'+(p.u!=='повт'?' '+p.u:'')};
+    if(fmt.mode==='interval')return{n:p.n,a:fmt.work+' сек'};
+    if(fmt.mode==='emom')return{n:p.n,a:rnd(p.lo,Math.round(p.hi*.7),p.st)+' '+p.u};
+    if(fmt.chip)return{n:p.n,a:rnd(Math.round(p.hi*1.3),p.hi*2,p.st)+(p.u==='повт'?'':' '+p.u)};
+    return{n:p.n,a:rnd(p.lo,p.hi,p.st)+(p.u==='повт'?'':' '+p.u)};
+  });
+  return{id:'gen',name:'СЛУЧАЙНЫЙ WOD',ic:I.dice,c:'p1',bg:'var(--p1d)',fg:'var(--p1t)',diff:1.2,gen:true,
+    blocks:[
+     {t:'Разминка',f:'8 мин',mode:'timer',dur:480,s:'Суставная + кардио-разгон + активация'},
+     {t:fmt.label,f:fmt.label,mode:fmt.mode,dur:fmt.dur,rounds:fmt.rounds,rest:fmt.rest,min:fmt.min,work:fmt.work,score:fmt.score,s:'Сгенерировано из ваших движений',ex},
+     {t:'Заминка',f:'7 мин',mode:'timer',dur:420,s:'Растяжка всё тело'}
+    ],tip:'Каждый запуск — новая комбинация.'};
+}
+let RANDSUB='roul';
+const BUILD={mode:'amrap',dur:1200,sel:[]};
+function randView(v){
+  v.innerHTML=`<div class="seg"><button data-s="roul" class="${RANDSUB==='roul'?'on':''}">Рулетка</button><button data-s="gen" class="${RANDSUB==='gen'?'on':''}">Генератор</button><button data-s="bld" class="${RANDSUB==='bld'?'on':''}">Свой WOD</button></div><div id="rb" style="margin-top:14px"></div>`;
+  v.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{RANDSUB=b.dataset.s;randView(v);});
+  const rb=v.querySelector('#rb');
+  if(RANDSUB==='roul')roulUI(rb);
+  else if(RANDSUB==='gen')genUI(rb);
+  else buildUI(rb);
+}
+function roulUI(rb){
+  rb.innerHTML=`<div class="roul" id="roul"><div class="needle"></div><div class="reel" id="reel"></div></div>
+   <button class="btn go" id="spin" style="margin-top:14px">${I.dice} Крутить рулетку</button>
+   <div class="muted" style="font-size:12px;text-align:center;margin-top:10px">Выпадет одна из ${WK.length} программ</div>`;
+  const reel=rb.querySelector('#reel');
+  const names=WK.map(w=>({n:w.name,ic:w.ic,fg:w.fg,id:w.id}));
+  const seq=[];for(let i=0;i<28;i++)seq.push(names[i%names.length]);
+  reel.innerHTML=seq.map(x=>`<div class="ritem" style="color:${x.fg}"><span class="ri">${x.ic}</span>${x.n}</div>`).join('');
+  reel.style.transform='translateY(-64px)';
+  rb.querySelector('#spin').onclick=()=>{
+    ensureAC();
+    const target=Math.floor(Math.random()*names.length);
+    const loops=names.length*3+target;const y=-(loops*64);
+    reel.style.transition='transform 2.6s cubic-bezier(.15,.85,.2,1)';reel.style.transform=`translateY(${y-64}px)`;
+    let t=0;const iv=setInterval(()=>{beepTick();if(++t>14)clearInterval(iv);},150);
+    setTimeout(()=>{beepGo();startWorkout(names[target].id);},2700);
+  };
+}
+function genUI(rb){
+  rb.innerHTML=`<button class="btn go" id="gen">${I.bolt} Сгенерировать свежий WOD</button><div id="genbox" style="margin-top:14px"></div>`;
+  rb.querySelector('#gen').onclick=()=>{
+    const G=genWod();const b=G.blocks[1];
+    const box=rb.querySelector('#genbox');
+    box.innerHTML=`<div class="card fade" style="background:var(--p1d);border-color:rgba(199,247,81,.25)">
+      <div class="row" style="justify-content:space-between"><div class="bebas" style="font-size:26px;color:var(--p1t)">${b.t}</div>${I.dice}</div>
+      <div class="muted" style="font-size:12px;margin:4px 0 8px">${b.f}</div>
+      ${b.ex.map(e=>`<div class="ex" style="border-color:rgba(255,255,255,.1)"><div class="d"></div><div class="n">${e.n}</div><div class="a">${e.a}</div></div>`).join('')}
+      <button class="btn go" id="goGen" style="margin-top:14px">${I.play} Запустить</button></div>`;
+    box.querySelector('#goGen').onclick=()=>startCustom(G);
+    beepTick();
+  };
+}
+function buildUI(rb){
+  const fmts=[['amrap','AMRAP'],['rft','For Time'],['rounds','Раунды'],['interval','Интервалы']];
+  rb.innerHTML=`
+   <div class="muted" style="font-size:12.5px;margin-bottom:12px">Собери свой WOD: выбери формат, длительность и движения (3–6).</div>
+   <div class="h-sec" style="margin-top:0">Формат</div>
+   <div class="seg" id="bf">${fmts.map(f=>`<button data-m="${f[0]}" class="${BUILD.mode===f[0]?'on':''}">${f[1]}</button>`).join('')}</div>
+   <div id="bparam" style="margin-top:12px"></div>
+   <div class="h-sec">Движения <span id="selc" style="color:var(--p1t)">${BUILD.sel.length}</span></div>
+   <div id="bmoves"></div>
+   <button class="btn go" id="bgo" style="margin-top:6px">${I.play} Запустить свой WOD</button>`;
+  rb.querySelectorAll('#bf button').forEach(b=>b.onclick=()=>{BUILD.mode=b.dataset.m;buildUI(rb);});
+  // params
+  const bp=rb.querySelector('#bparam');
+  if(BUILD.mode==='amrap')bp.innerHTML=segParam('Время',[['10 мин',600],['15 мин',900],['20 мин',1200]],'dur');
+  else if(BUILD.mode==='rounds')bp.innerHTML=segParam('Раундов',[['3',3],['4',4],['5',5]],'rounds');
+  else if(BUILD.mode==='interval')bp.innerHTML=segParam('Интервал',[['20/10',2010],['30/30',3030],['40/20',4020]],'iv');
+  else bp.innerHTML=`<div class="muted" style="font-size:12px">For Time: выполни все движения по разу на время.</div>`;
+  bp.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>{const k=b.dataset.pk,val=+b.dataset.pv;if(k==='iv'){BUILD.work=Math.floor(val/100);BUILD.rest=val%100;BUILD.rounds=8;}else BUILD[k]=val;buildUI(rb);});
+  // moves
+  const mv=rb.querySelector('#bmoves');
+  mv.innerHTML=POOL.map((p,i)=>`<div class="bld-mv ${BUILD.sel.includes(i)?'sel':''}" data-i="${i}"><div class="ck">${BUILD.sel.includes(i)?I.check:''}</div><div class="nm">${p.n}</div><div class="cat">${p.cat}</div></div>`).join('');
+  mv.querySelectorAll('.bld-mv').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;const x=BUILD.sel.indexOf(i);if(x>=0)BUILD.sel.splice(x,1);else if(BUILD.sel.length<6)BUILD.sel.push(i);buildUI(rb);});
+  rb.querySelector('#bgo').onclick=()=>{
+    if(BUILD.sel.length<3){toast('Выбери хотя бы 3 движения',I.bolt);return;}
+    startCustom(buildWod());
+  };
+}
+function segParam(label,opts,key){
+  const cur=key==='iv'?(BUILD.work*100+BUILD.rest):BUILD[key];
+  return `<div class="dim" style="font-size:11px;margin-bottom:5px">${label}</div><div class="seg">${opts.map(o=>`<button data-pk="${key}" data-pv="${o[1]}" class="${cur===o[1]?'on':''}">${o[0]}</button>`).join('')}</div>`;
+}
+function buildWod(){
+  const sel=BUILD.sel.map(i=>POOL[i]);
+  let block;
+  if(BUILD.mode==='amrap')block={t:'AMRAP',f:'AMRAP '+(BUILD.dur||1200)/60+' мин',mode:'amrap',dur:BUILD.dur||1200,score:'rounds',s:'Твой AMRAP',ex:sel.map(p=>({n:p.n,a:rnd(p.lo,p.hi,p.st)+(p.u==='повт'?'':' '+p.u)}))};
+  else if(BUILD.mode==='rounds')block={t:(BUILD.rounds||4)+' раунда',f:(BUILD.rounds||4)+' раунда',mode:'rounds',rounds:BUILD.rounds||4,rest:60,score:'time',s:'Твои раунды на время',ex:sel.map(p=>({n:p.n,a:rnd(p.lo,p.hi,p.st)+(p.u==='повт'?'':' '+p.u)}))};
+  else if(BUILD.mode==='interval')block={t:'Интервалы',f:(BUILD.work||40)+'/'+(BUILD.rest||20)+' ×'+(BUILD.rounds||8),mode:'interval',work:BUILD.work||40,rest:BUILD.rest||20,rounds:BUILD.rounds||8,s:'Движение меняется каждый интервал',ex:sel.map(p=>({n:p.n,a:(BUILD.work||40)+' сек'}))};
+  else block={t:'For Time',f:'For Time',mode:'rft',score:'time',s:'Все движения по разу на время',ex:sel.map(p=>({n:p.n,a:rnd(Math.round(p.hi*1.2),p.hi*2,p.st)+(p.u==='повт'?'':' '+p.u)}))};
+  return{id:'custom',name:'СВОЙ WOD',ic:I.hammer,c:'p1',bg:'var(--p1d)',fg:'var(--p1t)',diff:1.2,gen:true,
+    blocks:[{t:'Разминка',f:'8 мин',mode:'timer',dur:480,s:'Суставная + разогрев'},block,{t:'Заминка',f:'7 мин',mode:'timer',dur:420,s:'Растяжка'}],tip:'Свой WOD засчитывается в общий прогресс.'};
+}
+
+/* ---------- PROGRESS ---------- */
+function progView(v){
+  const h=S.history;const total=h.length;
+  const totXp=S.ath[0].xp+S.ath[1].xp;
+  const ms=maxStreak(S),cs=curStreak(S);
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d);}
+  const counts=days.map(d=>h.filter(x=>dayKey(x.ts)===dayKey(d.getTime())).length);
+  const mx=Math.max(1,...counts);
+  const dn=['пн','вт','ср','чт','пт','сб','вс'];
+  v.innerHTML=`
+  <div class="h-sec" style="margin-top:14px">Сводка</div>
+  <div class="stats4">
+    <div class="sbox"><div class="v" style="color:var(--p1t)">${total}</div><div class="k">тренировок всего</div></div>
+    <div class="sbox"><div class="v" style="color:var(--gold)">${totXp}</div><div class="k">XP вместе</div></div>
+    <div class="sbox"><div class="v" style="color:var(--p2t)">${cs}</div><div class="k">текущий стрик</div></div>
+    <div class="sbox"><div class="v">${ms}</div><div class="k">рекорд стрика</div></div>
+  </div>
+  <div class="h-sec">Активность · 7 дней</div>
+  <div class="card"><div class="chart">${counts.map((c,i)=>`<div class="c"><div class="bar" style="height:${Math.round(c/mx*100)}%;background:${c?'var(--p1)':'var(--surf3)'}"></div><div class="lab">${dn[days[i].getDay()===0?6:days[i].getDay()-1]}</div></div>`).join('')}</div></div>
+  <div class="h-sec">История</div>
+  ${total?`<div class="hist" id="hist">${h.slice().reverse().slice(0,40).map(x=>{const w=WK.find(z=>z.id===x.wid);const nm=w?w.name:(x.wname||'WOD');const A=S.ath[x.ath];return `<div class="hev p${x.ath+1}" style="position:relative;padding-right:34px"><button class="hdel" data-id="${x.id}">${I.trash}</button><span class="sc">+${x.xp} XP</span><div class="t">${nm}</div><div class="m">${A.name} · ${histDate(x.ts)}${x.result?' · '+x.result:''}</div></div>`;}).join('')}</div>`
+   :`<div class="card" style="text-align:center"><div class="muted">Пока пусто. Запусти первый WOD — здесь появятся лог и графики.</div></div>`}`;
+  v.querySelectorAll('.hdel').forEach(b=>b.onclick=async()=>{if(confirm('Удалить эту запись? XP за неё спишется.')){await deleteEvent(b.dataset.id);await load();render();toast('Запись удалена',I.check);}});
+}
+function histDate(ts){const d=new Date(ts);const days=['вс','пн','вт','ср','чт','пт','сб'];return days[d.getDay()]+' '+d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+
+/* ---------- BADGES ---------- */
+function badgeView(v){
+  const got=new Set(S.ach);ACH.forEach(a=>{if(a.chk(S))got.add(a.id);});
+  v.innerHTML=`
+  <div class="h-sec" style="margin-top:14px">Награды · ${got.size}/${ACH.length}</div>
+  <div class="badges">${ACH.map(a=>{const g=got.has(a.id);return `<div class="badge ${g?'got':'lock'}"><div class="bi">${g?a.ic:lockIc}</div><div class="bn">${a.n}</div></div>`;}).join('')}</div>
+  <div class="h-sec">Рейтинг атлетов</div>
+  ${[0,1].map(i=>{const s=lvlFromXp(S.ath[i].xp);const cnt=S.history.filter(h=>h.ath===i).length;return `<div class="card" style="margin-bottom:10px"><div class="row"><div class="avatar" style="background:${i===0?'var(--p1)':'var(--p2)'}">${avatarInit(S.ath[i].name)}</div><div style="flex:1"><div style="font-weight:800">${S.ath[i].name}</div><div class="dim" style="font-size:11px">${rankName(s.lvl)} · ур. ${s.lvl}</div></div><div style="text-align:right"><div class="bebas" style="font-size:24px;color:var(--gold)">${S.ath[i].xp}</div><div class="dim" style="font-size:10px">${cnt} трен.</div></div></div></div>`;}).join('')}`;
+}
+const lockIc='<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8"/></svg>';
+
+/* ====================== LIVE ENGINE ====================== */
+let LV=null;
+function startWorkout(id){const w=WK.find(x=>x.id===id);if(w)startCustom(w);}
+function startCustom(w){
+  LV={w,bi:0,tid:null,running:false,phase:'idle',scores:{}};
+  document.getElementById('live').classList.add('on');
+  acquireWake();ensureAC();
+  liveRender();
+}
+function exitLive(){if(LV&&LV.tid)clearInterval(LV.tid);LV=null;releaseWake();document.getElementById('live').classList.remove('on');render();}
+function clearT(){if(LV.tid){clearInterval(LV.tid);LV.tid=null;}LV.running=false;}
+
+function liveRender(){
+  const L=document.getElementById('live');const w=LV.w;const b=w.blocks[LV.bi];
+  const prog=w.blocks.map((_,i)=>`<i class="${i<LV.bi?'done':i===LV.bi?'now':''}" data-jb="${i}"></i>`).join('');
+  L.innerHTML=`
+   <div class="live-top">
+     <button class="iconbtn" id="lvExit">${I.x}</button>
+     <div style="text-align:center"><div class="bebas" style="font-size:22px;color:${w.fg||'var(--p1)'}">${w.name}</div><div class="dim" style="font-size:10px;letter-spacing:.1em">${LV.bi+1}/${w.blocks.length} · ${b.t.toUpperCase()}</div></div>
+     <button class="iconbtn" id="lvSound">${SOUND?I.sound:I.mute}</button>
+   </div>
+   <div class="live-prog">${prog}</div>
+   <div id="lvStage" style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;overflow:auto;padding-top:6px"></div>`;
+  L.querySelector('#lvExit').onclick=()=>{if(confirm('Выйти из тренировки? Прогресс не сохранится.'))exitLive();};
+  L.querySelector('#lvSound').onclick=()=>{setSound(!SOUND);if(SOUND){ensureAC();beepTick();}L.querySelector('#lvSound').innerHTML=SOUND?I.sound:I.mute;};
+  L.querySelectorAll('[data-jb]').forEach(s=>s.onclick=()=>{const i=+s.dataset.jb;if(i!==LV.bi){clearT();LV.bi=i;liveRender();}});
+  stage(b);
+}
+
+function binfoHTML(b){
+  const ex=(b.ex||[]).map(e=>`<div class="bexr"><span>${e.n}${e.no?` · ${e.no}`:''}</span><b>${e.a||''}</b></div>`).join('');
+  return `<div class="binfo"><div class="binfo-h"><b>${b.t}</b><span>${b.f}</span></div>${b.s?`<div class="binfo-s">${b.s}</div>`:''}${ex?`<div class="bex">${ex}</div>`:''}</div>`;
+}
+function numBlock(){return `<div class="timer" id="lvNum">0:00</div><div class="tprog" id="lvProg"><i></i></div><div class="timersub" id="lvSub"></div>`;}
+function setNum(t){const e=document.getElementById('lvNum');if(e)e.textContent=t;}
+function setSub(t){const e=document.getElementById('lvSub');if(e)e.textContent=t;}
+function setBar(frac){const e=document.getElementById('lvProg');if(e)e.firstElementChild.style.width=Math.max(0,Math.min(100,frac*100))+'%';}
+function restClass(on){const e=document.getElementById('lvProg');if(e)e.classList.toggle('rest',on);}
+
+function stage(b){
+  clearT();LV.phase='idle';
+  const st=document.getElementById('lvStage');
+  const m=b.mode;
+  if(m==='timer'||m==='amrap'){
+    st.innerHTML=numBlock()+binfoHTML(b)+
+      (m==='amrap'?`<div class="rcount" id="rc"><button id="rm">–</button><div class="rv"><span id="rv">0</span><small>РАУНДОВ</small></div><button id="rp">+</button></div>`:'')+
+      `<div class="ctrls"><button class="btn go" id="lvPlay">${I.play} Старт</button>${m==='amrap'?`<button class="btn coral" id="lvFin">Финиш</button>`:`<button class="btn ghost" id="lvNext">${I.skip} Далее</button>`}</div>`;
+    LV.sec=b.dur;LV.total=b.dur;LV.tally=0;
+    setNum(fmtTime(LV.sec));setBar(1);setSub(m==='amrap'?'AMRAP · нажми старт':'таймер · нажми старт');
+    if(m==='amrap'){const rv=st.querySelector('#rv');st.querySelector('#rp').onclick=()=>{LV.tally++;rv.textContent=LV.tally;beepTick();vibrate(40);};st.querySelector('#rm').onclick=()=>{if(LV.tally>0)LV.tally--;rv.textContent=LV.tally;};st.querySelector('#lvFin').onclick=()=>{clearT();openScore(b);};}
+    wirePlay(b);wireNext(st);
+  }
+  else if(m==='emom'){
+    st.innerHTML=numBlock()+binfoHTML(b)+`<div class="ctrls"><button class="btn go" id="lvPlay">${I.play} Старт</button><button class="btn ghost" id="lvNext">${I.skip} Далее</button></div>`;
+    LV.sec=b.min*60;LV.total=LV.sec;setNum(fmtTime(LV.sec));setBar(1);setSub('EMOM · нажми старт');
+    wirePlay(b);wireNext(st);
+  }
+  else if(m==='interval'){
+    st.innerHTML=numBlock()+binfoHTML(b)+`<div class="ctrls"><button class="btn go" id="lvPlay">${I.play} Старт</button><button class="btn ghost" id="lvNext">${I.skip} Далее</button></div>`;
+    LV.round=1;LV.sec=b.work;LV.total=b.work;LV.work=true;setNum(LV.sec);setBar(1);setSub('нажми старт · '+b.rounds+' раундов');
+    wirePlay(b);wireNext(st);
+  }
+  else if(m==='rounds'){
+    st.innerHTML=numBlock()+binfoHTML(b)+
+      `<div class="rcount"><button id="rm">–</button><div class="rv"><span id="rv">1</span><small>РАУНД${b.rounds?' / '+b.rounds:''}</small></div><button id="rp">+</button></div>
+       <div class="ctrls"><button class="btn go" id="lvPlay">${I.play} Старт</button><button class="btn ghost" id="lvRound">Раунд закрыт</button></div>
+       <div class="ctrls" style="margin-top:8px"><button class="btn coral" id="lvFin">Финиш блока</button><button class="btn ghost" id="lvNext">${I.skip} Далее</button></div>`;
+    LV.sec=0;LV.round=1;LV.resting=false;
+    setNum('0:00');setBar(0);setSub(b.rest?('раунд 1'+(b.rounds?' / '+b.rounds:'')+' · отдых '+b.rest+'с'):'на время');
+    const rv=st.querySelector('#rv');
+    st.querySelector('#rp').onclick=()=>{LV.round++;rv.textContent=LV.round;};
+    st.querySelector('#rm').onclick=()=>{if(LV.round>1)LV.round--;rv.textContent=LV.round;};
+    st.querySelector('#lvRound').onclick=()=>roundClosed(b,rv);
+    st.querySelector('#lvFin').onclick=()=>{clearT();openScore(b);};
+    wirePlay(b);wireNext(st);
+  }
+  else if(m==='rft'){
+    st.innerHTML=numBlock()+binfoHTML(b)+`<div class="ctrls"><button class="btn go" id="lvPlay">${I.play} Старт</button><button class="btn coral" id="lvFin">Финиш</button></div><div class="ctrls" style="margin-top:8px"><button class="btn ghost" id="lvNext">${I.skip} Далее</button></div>`;
+    LV.sec=0;setNum('0:00');setBar(0);setSub('на время · нажми старт');
+    st.querySelector('#lvFin').onclick=()=>{clearT();openScore(b);};
+    wirePlay(b);wireNext(st);
+  }
+  else if(m==='deathby'){
+    st.innerHTML=numBlock()+binfoHTML(b)+`<div class="ctrls"><button class="btn go" id="lvPlay">${I.play} Старт</button><button class="btn coral" id="lvFail">Не успел</button></div><div class="ctrls" style="margin-top:8px"><button class="btn ghost" id="lvNext">${I.skip} Далее</button></div>`;
+    LV.minute=1;LV.target=b.start;LV.sec=60;LV.total=60;
+    setNum('1:00');setBar(1);setSub('минута 1 · '+b.start+' '+b.move);
+    st.querySelector('#lvFail').onclick=()=>{clearT();LV.scores[b.t]='дошёл до '+LV.target+' ('+(LV.minute)+' мин)';beepDone();nextBlock();};
+    wirePlay(b);wireNext(st);
+  }
+  else if(m==='strength'){
+    st.innerHTML=`<div class="timer" id="lvNum" style="font-size:84px">${b.sets}</div><div class="timersub" id="lvSub">подходов по ${b.reps}</div>`+binfoHTML(b)+
+      `<div class="scoreinput" style="margin-top:12px"><input id="wkg" inputmode="decimal" placeholder="рабочий вес, кг (необяз.)"></div>
+       <div class="rcount"><button id="rm">–</button><div class="rv"><span id="rv">1</span><small>ПОДХОД / ${b.sets}</small></div><button id="rp">+</button></div>
+       <div class="ctrls"><button class="btn go" id="lvSet">Подход готов · отдых ${b.rest}с</button></div>
+       <div class="ctrls" style="margin-top:8px"><button class="btn ghost" id="lvNext">${I.skip} Далее</button></div>`;
+    LV.set=1;const rv=st.querySelector('#rv');
+    st.querySelector('#rp').onclick=()=>{if(LV.set<b.sets){LV.set++;rv.textContent=LV.set;}};
+    st.querySelector('#rm').onclick=()=>{if(LV.set>1){LV.set--;rv.textContent=LV.set;}};
+    st.querySelector('#lvSet').onclick=()=>strengthSet(b,rv);
+    wireNext(st);
+  }
+}
+
+function wirePlay(b){const pb=document.getElementById('lvPlay');if(pb)pb.onclick=()=>togglePlay(b);}
+function wireNext(st){const nx=st.querySelector('#lvNext');if(nx)nx.onclick=()=>{clearT();nextBlock();};}
+
+function togglePlay(b){
+  const pb=document.getElementById('lvPlay');
+  if(LV.running||LV.phase==='lead'){clearT();LV.phase='paused';if(pb)pb.innerHTML=I.play+' Продолжить';return;}
+  ensureAC();
+  withLead(()=>{ if(pb)pb.innerHTML=I.pause+' Пауза'; runMode(b); });
+}
+function withLead(go){
+  LV.phase='lead';let n=3;setSub('ПРИГОТОВЬСЯ');setNum(n);beepCue(3);vibrate(90);
+  LV.tid=setInterval(()=>{n--;if(n>0){setNum(n);beepCue(n);vibrate(90);}else{clearInterval(LV.tid);LV.tid=null;beepGo();vibrate([0,160]);go();}},1000);
+}
+function runMode(b){
+  LV.running=true;LV.phase='work';
+  if(b.mode==='timer'||b.mode==='amrap')runCountdown(b);
+  else if(b.mode==='emom')runEmom(b);
+  else if(b.mode==='interval')runInterval(b);
+  else if(b.mode==='rounds'||b.mode==='rft')runCountup(b);
+  else if(b.mode==='deathby')runDeathby(b);
+}
+
+function runCountdown(b){
+  setSub(b.mode==='amrap'?'AMRAP · осталось':'таймер');setNum(fmtTime(LV.sec));
+  LV.tid=setInterval(()=>{
+    LV.sec--;setNum(fmtTime(LV.sec));setBar(LV.sec/LV.total);
+    if(LV.sec<=3&&LV.sec>0){beepTick();vibrate(60);}
+    if(LV.sec<=0){clearT();beepDone();vibrate([0,200,80,200]);
+      if(b.mode==='amrap'){openScore(b);}else{toast('Блок завершён',I.check);nextBlock();}}
+  },1000);
+}
+function runEmom(b){
+  LV.tid=setInterval(()=>{
+    LV.sec--;setNum(fmtTime(LV.sec));setBar(LV.sec/LV.total);
+    const elapsed=b.min*60-LV.sec;const inMin=elapsed%60;const curMin=Math.floor(elapsed/60)+1;
+    if(inMin===0){beepGo();vibrate([0,120]);setSub('EMOM · минута '+Math.min(curMin,b.min)+' / '+b.min);}
+    else{if(setSubInit())setSub('EMOM · минута '+Math.min(curMin,b.min)+' / '+b.min);if(60-inMin<=3){beepTick();vibrate(50);}}
+    if(LV.sec<=0){clearT();beepDone();vibrate([0,200,80,200]);toast('EMOM завершён',I.check);nextBlock();}
+  },1000);
+}
+let _subFlag=true;function setSubInit(){if(_subFlag){_subFlag=false;return true;}return false;}
+function runInterval(b){
+  applyInterval(b);
+  LV.tid=setInterval(()=>{
+    LV.sec--;setNum(LV.sec);setBar(LV.sec/LV.total);
+    if(LV.sec<=3&&LV.sec>0){beepTick();vibrate(50);}
+    if(LV.sec<=0){
+      if(LV.work){ // work -> rest (or next round if rest 0)
+        if(b.rest>0){LV.work=false;LV.sec=b.rest;LV.total=b.rest;restClass(true);beepRest();vibrate([0,140]);setSub('ОТДЫХ · след. раунд '+(LV.round+1<=b.rounds?LV.round+1:LV.round)+'/'+b.rounds);}
+        else{LV.round++;if(LV.round>b.rounds){finishInterval(b);return;}LV.sec=b.work;LV.total=b.work;beepGo();vibrate([0,120]);intervalWorkSub(b);}
+      } else { // rest -> next work
+        LV.round++;if(LV.round>b.rounds){finishInterval(b);return;}
+        LV.work=true;LV.sec=b.work;LV.total=b.work;restClass(false);beepGo();vibrate([0,120]);intervalWorkSub(b);
+      }
+    }
+  },1000);
+}
+function applyInterval(b){restClass(false);intervalWorkSub(b);}
+function intervalWorkSub(b){const mv=(b.ex&&b.ex.length)?b.ex[(LV.round-1)%b.ex.length].n:'';setSub('РАБОТА · раунд '+LV.round+'/'+b.rounds+(mv?' · '+mv:''));}
+function finishInterval(b){clearT();beepDone();vibrate([0,200,80,200]);toast('Интервалы завершены',I.check);nextBlock();}
+function runCountup(b){
+  setSub(b.mode==='rounds'?('раунд '+LV.round+(b.rounds?' / '+b.rounds:'')):'на время');setNum(fmtTime(LV.sec));
+  LV.tid=setInterval(()=>{LV.sec++;setNum(fmtTime(LV.sec));},1000);
+}
+function runDeathby(b){
+  setSub('минута '+LV.minute+' · '+LV.target+' '+b.move);setNum('1:00');
+  LV.tid=setInterval(()=>{
+    LV.sec--;setNum(fmtTime(LV.sec));setBar(LV.sec/60);
+    if(LV.sec<=3&&LV.sec>0){beepTick();vibrate(50);}
+    if(LV.sec<=0){LV.minute++;LV.target+=b.step;LV.sec=60;setBar(1);beepGo();vibrate([0,140]);setSub('минута '+LV.minute+' · '+LV.target+' '+b.move);
+      if(b.cap&&LV.target>b.cap){clearT();beepDone();LV.scores[b.t]='дошёл до '+b.cap+'+';toast('Cap! Зверь.',I.skull);nextBlock();}}
+  },1000);
+}
+
+/* rounds: round closed -> programmed rest countdown */
+function roundClosed(b,rv){
+  if(LV.resting)return;
+  if(!LV.running){toast('Сначала запусти таймер',I.bolt);return;}
+  if(b.rounds&&LV.round>=b.rounds){clearT();openScore(b);return;}
+  LV.round++;rv.textContent=LV.round;
+  if(b.rest>0){
+    LV.resting=true;clearInterval(LV.tid);
+    let r=b.rest;restClass(true);setSub('ОТДЫХ');setNum(fmtTime(r));beepRest();vibrate([0,140]);
+    LV.tid=setInterval(()=>{
+      r--;setNum(fmtTime(r));setBar(r/b.rest);
+      if(r<=3&&r>0){beepTick();vibrate(50);}
+      if(r<=0){clearInterval(LV.tid);LV.resting=false;restClass(false);beepGo();vibrate([0,140]);setSub('раунд '+LV.round+(b.rounds?' / '+b.rounds:''));runCountup(b);}
+    },1000);
+  } else { setSub('раунд '+LV.round+(b.rounds?' / '+b.rounds:'')); }
+}
+
+/* strength: set done -> rest countdown */
+function strengthSet(b,rv){
+  if(LV.resting)return;
+  if(LV.set>=b.sets){const kg=document.getElementById('wkg').value.trim();LV.scores[b.t]=b.move+' '+b.sets+'×'+b.reps+(kg?' @'+kg+'кг':'');beepDone();toast('Силовая закрыта',I.check);nextBlock();return;}
+  const kgEl=document.getElementById('wkg');
+  LV.set++;rv.textContent=LV.set;
+  LV.resting=true;let r=b.rest;
+  const num=document.getElementById('lvNum');num.style.fontSize='84px';setNum(fmtTime(r));setSub('ОТДЫХ · след. подход '+LV.set+'/'+b.sets);beepRest();vibrate([0,140]);
+  LV.tid=setInterval(()=>{r--;setNum(fmtTime(r));if(r<=3&&r>0){beepTick();vibrate(50);}if(r<=0){clearInterval(LV.tid);LV.tid=null;LV.resting=false;beepGo();vibrate([0,140]);setNum(b.sets-LV.set+1);setSub('подход '+LV.set+'/'+b.sets+' по '+b.reps);}},1000);
+}
+
+function nextBlock(){_subFlag=true;if(LV.bi<LV.w.blocks.length-1){LV.bi++;liveRender();}else finishWorkout();}
+
+/* score screen — manual round / time tally */
+function openScore(b){
+  _subFlag=true;
+  const st=document.getElementById('lvStage');
+  if(b.score==='time'){
+    const t=fmtTime(LV.sec);
+    let extra='';
+    if(b.mode==='rounds'){extra=`<div class="rcount"><button id="rm">–</button><div class="rv"><span id="rv">${LV.round}</span><small>РАУНДОВ ВСЕГО</small></div><button id="rp">+</button></div>`;}
+    st.innerHTML=`<div style="text-align:center;padding-top:20px">${binfoHTML(b)}<div class="timersub" style="margin-top:14px">Твоё время</div><div class="timer" style="font-size:74px">${t}</div>${extra}<button class="btn go" id="saveSc" style="margin-top:14px">${I.check} Засчитать</button></div>`;
+    let rounds=LV.round;
+    if(b.mode==='rounds'){const rv=st.querySelector('#rv');st.querySelector('#rp').onclick=()=>{rounds++;rv.textContent=rounds;};st.querySelector('#rm').onclick=()=>{if(rounds>0)rounds--;rv.textContent=rounds;};}
+    st.querySelector('#saveSc').onclick=()=>{LV.scores[b.t]=t+(b.mode==='rounds'?(' · '+rounds+' р.'):'');nextBlock();};
+  } else { // rounds tally (amrap etc.)
+    let val=LV.tally||0;
+    st.innerHTML=`<div style="text-align:center;padding-top:20px">${binfoHTML(b)}<div class="timersub" style="margin-top:14px">Сколько раундов закрыли?</div>
+      <div class="rcount" style="margin-top:8px"><button id="rm" style="width:54px;height:54px;font-size:30px">–</button><div class="rv" style="font-size:60px"><span id="rv">${val}</span></div><button id="rp" style="width:54px;height:54px;font-size:30px">+</button></div>
+      <div class="muted" style="font-size:12px">Остаток повторов можно дописать мысленно — считаем полные раунды</div>
+      <button class="btn go" id="saveSc" style="margin-top:18px">${I.check} Засчитать</button></div>`;
+    const rv=st.querySelector('#rv');
+    st.querySelector('#rp').onclick=()=>{val++;rv.textContent=val;beepTick();};
+    st.querySelector('#rm').onclick=()=>{if(val>0)val--;rv.textContent=val;};
+    st.querySelector('#saveSc').onclick=()=>{LV.scores[b.t]=val+' раундов';nextBlock();};
+  }
+}
+
+/* finish */
+function finishWorkout(){
+  const w=LV.w;
+  let durMin=100;
+  if(!w.gen&&w.tags){const tg=w.tags.find(t=>/мин/.test(t));if(tg){const m=tg.match(/\d+/);if(m)durMin=parseInt(m[0]);}}
+  const baseXp=Math.round((w.gen?60:Math.min(durMin,120))*(w.diff||1.2)+40);
+  const scoreStr=Object.values(LV.scores).filter(Boolean).join(' · ');
+  document.querySelector('.live-prog').innerHTML=LV.w.blocks.map(()=>'<i class="done"></i>').join('');
+  const st=document.getElementById('lvStage');
+  st.innerHTML=`<div class="lvlup fade" style="padding-top:14px">
+     <div style="color:var(--gold)">${I.trophy}</div>
+     <div class="big bebas">WOD ЗАКРЫТ</div>
+     <div class="muted" style="margin-top:4px">${w.name}${scoreStr?' · '+scoreStr:''}</div>
+     <div class="pill" style="background:rgba(255,194,71,.18);color:var(--gold);margin-top:14px;font-size:14px">${I.bolt} +${baseXp} XP</div>
+     <div class="timersub" style="margin-top:24px">Кто выполнил?</div>
+     <div class="whochip" id="whochip">
+       <button data-i="0">${avatarInit(S.ath[0].name)} · ${S.ath[0].name}</button>
+       <button data-i="1">${avatarInit(S.ath[1].name)} · ${S.ath[1].name}</button>
+     </div>
+     <div class="whochip" style="margin-top:8px"><button data-i="2" style="flex:1">${I.users} Оба (дуэт)</button></div>
+     <button class="btn ghost" id="lvDone" style="margin-top:18px;opacity:.5" disabled>Выбери атлета</button>
+   </div>`;
+  confetti();beepDone();
+  let who=null;
+  st.querySelectorAll('.whochip button').forEach(btn=>btn.onclick=()=>{
+    st.querySelectorAll('.whochip button').forEach(x=>x.className='');
+    who=parseInt(btn.dataset.i);btn.classList.add(who===1?'on2':'on1');
+    const d=st.querySelector('#lvDone');d.disabled=false;d.style.opacity=1;d.innerHTML=I.check+' Сохранить результат';beepTick();
+  });
+  st.querySelector('#lvDone').onclick=async()=>{
+    if(who===null)return;
+    const ts=Date.now();const targets=who===2?[0,1]:[who];
+    const before=[lvlFromXp(S.ath[0].xp).lvl,lvlFromXp(S.ath[1].xp).lvl];
+    const evs=targets.map(i=>({id:ts+'-'+i+'-'+Math.random().toString(36).slice(2,7),ts,type:'workout',wid:w.gen?(w.id||'gen'):w.id,wname:w.name,ath:i,xp:baseXp,result:scoreStr}));
+    evs.forEach(ev=>{S.ath[ev.ath].xp+=ev.xp;S.history.push(ev);});
+    const prev=new Set(S.ach);ACH.forEach(a=>{if(a.chk(S))S.ach.push(a.id);});S.ach=[...new Set(S.ach)];
+    const newBadges=S.ach.filter(x=>!prev.has(x));
+    await pushEvents(evs);
+    const after=[lvlFromXp(S.ath[0].xp).lvl,lvlFromXp(S.ath[1].xp).lvl];
+    const lvUp=targets.find(i=>after[i]>before[i]);
+    exitLive();
+    if(lvUp!==undefined)setTimeout(()=>toast(S.ath[lvUp].name+' → уровень '+after[lvUp]+'! '+rankName(after[lvUp]),I.crown),300);
+    else setTimeout(()=>toast('+'+baseXp+' XP записано',I.check),300);
+    if(newBadges.length)setTimeout(()=>{const a=ACH.find(x=>x.id===newBadges[0]);toast('Награда: '+a.n,I.medal);},lvUp!==undefined?2800:2600);
+  };
+}
+
+/* ---------- settings ---------- */
+document.getElementById('settingsBtn').onclick=()=>{
+  const sc=document.getElementById('scrim'),sh=document.getElementById('sheet');
+  sh.innerHTML=`<div class="row" style="justify-content:space-between"><div class="bebas" style="font-size:26px">Настройки</div><button class="iconbtn" id="clx">${I.x}</button></div>
+   <div class="h-sec" style="margin-top:18px">Звук и вибро</div>
+   <div class="tgl"><div class="lab">Звук таймера<small>отсчёт 3-2-1, биперы, конец</small></div><div class="sw ${SOUND?'on':''}" id="swSound"><i></i></div></div>
+   <div class="tgl"><div class="lab">Вибрация<small>отклик на телефоне</small></div><div class="sw ${HAPTIC?'on':''}" id="swHap"><i></i></div></div>
+   <div class="h-sec">Имена атлетов</div>
+   <input id="sn1" value="${S.ath[0].name}" style="width:100%;margin-bottom:10px;background:var(--surf);border:1px solid var(--line2);border-radius:12px;padding:12px;color:var(--tx);font-weight:700">
+   <input id="sn2" value="${S.ath[1].name}" style="width:100%;background:var(--surf);border:1px solid var(--line2);border-radius:12px;padding:12px;color:var(--tx);font-weight:700">
+   <button class="btn go" id="ssave" style="margin-top:16px">${I.check} Сохранить имена</button>
+   <button class="btn ghost" id="sreset" style="margin-top:10px;color:var(--p2t)">Сбросить весь прогресс</button>`;
+  sc.classList.add('on');
+  sh.querySelector('#clx').onclick=()=>sc.classList.remove('on');
+  sc.onclick=e=>{if(e.target===sc)sc.classList.remove('on');};
+  sh.querySelector('#swSound').onclick=function(){setSound(!SOUND);this.classList.toggle('on',SOUND);if(SOUND){ensureAC();beepTick();}};
+  sh.querySelector('#swHap').onclick=function(){setHaptic(!HAPTIC);this.classList.toggle('on',HAPTIC);if(HAPTIC)vibrate(60);};
+  sh.querySelector('#ssave').onclick=async()=>{S.ath[0].name=(sh.querySelector('#sn1').value||'Атлет 1').slice(0,14);S.ath[1].name=(sh.querySelector('#sn2').value||'Атлет 2').slice(0,14);await setNames(S.ath[0].name,S.ath[1].name);sc.classList.remove('on');render();toast('Сохранено',I.check);};
+  sh.querySelector('#sreset').onclick=async()=>{if(confirm('Удалить весь прогресс, XP и историю у ОБОИХ? Это необратимо.')){await resetAll();await load();sc.classList.remove('on');render();}};
+};
+
+/* ---------- boot ---------- */
+(async function(){await load();render();startSync();})();
+
+</script>
+</body>
+</html>
